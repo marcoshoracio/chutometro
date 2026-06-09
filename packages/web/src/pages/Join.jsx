@@ -8,7 +8,7 @@ export default function Join() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
-  const [step, setStep] = useState('group'); // 'group' | 'auth' | 'magic-sent' | 'create'
+  const [step, setStep] = useState('group'); // 'group' | 'auth' | 'magic-sent' | 'create' | 'create-auth'
   const [code, setCode] = useState(searchParams.get('code') || '');
   const [groupInfo, setGroupInfo] = useState(null);
   const [email, setEmail] = useState('');
@@ -184,6 +184,60 @@ export default function Join() {
                 {loading ? 'Buscando...' : 'Continuar'}
               </button>
             </form>
+            <div className="border-t border-navy-border pt-4 text-center">
+              <p className="text-muted text-xs mb-3">Quer criar seu próprio bolão?</p>
+              <button
+                onClick={() => { setStep('create-auth'); setError(''); }}
+                className="btn-secondary w-full"
+              >
+                Criar novo bolão
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 'create-auth' && (
+          <div className="card p-6 space-y-4">
+            <h2 className="font-bold text-lg">Criar novo bolão</h2>
+            <p className="text-muted text-sm">Entre com seu e-mail para começar.</p>
+            <form onSubmit={handleRequestMagicLink} className="space-y-3">
+              <div>
+                <label className="text-xs text-muted block mb-1">Seu nome</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Como quer ser chamado?"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted block mb-1">E-mail</label>
+                <input
+                  type="email"
+                  className="input"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              {error && <p className="text-red-400 text-sm">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading || !email.trim()}
+                className="btn-primary w-full"
+              >
+                {loading ? 'Enviando...' : 'Enviar link de acesso'}
+              </button>
+            </form>
+            <button
+              onClick={() => { setStep('group'); setError(''); }}
+              className="text-muted text-xs hover:text-white w-full text-center"
+            >
+              Voltar
+            </button>
           </div>
         )}
 
