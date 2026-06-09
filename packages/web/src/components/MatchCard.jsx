@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import CountdownTimer from './CountdownTimer';
+import { getFlag } from '../utils/flags';
 
 const STAGE_LABELS = {
   GROUP_STAGE: 'Fase de Grupos',
@@ -42,7 +43,9 @@ export default function MatchCard({ match, prediction, score, compact = false })
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Home */}
         <div className="flex-1 text-right">
-          <span className="font-semibold text-sm sm:text-base">{match.homeTeam}</span>
+          <span className="font-semibold text-sm sm:text-base">
+            {match.homeTeam} {getFlag(match.homeTeam)}
+          </span>
         </div>
 
         {/* Score / Time */}
@@ -63,7 +66,9 @@ export default function MatchCard({ match, prediction, score, compact = false })
 
         {/* Away */}
         <div className="flex-1">
-          <span className="font-semibold text-sm sm:text-base">{match.awayTeam}</span>
+          <span className="font-semibold text-sm sm:text-base">
+            {getFlag(match.awayTeam)} {match.awayTeam}
+          </span>
         </div>
       </div>
 

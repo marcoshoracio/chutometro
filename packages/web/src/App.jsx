@@ -11,6 +11,7 @@ import AdminPanel from './pages/AdminPanel';
 import PreTournament from './pages/PreTournament';
 import AuthVerify from './pages/AuthVerify';
 import Layout from './components/Layout';
+import WCGroups from './pages/WCGroups';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -46,7 +47,9 @@ export default function App() {
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="admin" element={<AdminPanel />} />
             <Route path="pre-torneio" element={<PreTournament />} />
+            <Route path="grupos" element={<WCGroups />} />
           </Route>
+          <Route path="/wc-grupos" element={<WCGroups />} />
           <Route path="/" element={<Navigate to="/join" replace />} />
           <Route path="*" element={<Navigate to="/join" replace />} />
         </Routes>

@@ -16,6 +16,7 @@ const leaderboardRoutes = require('./routes/leaderboard');
 const resultsRoutes = require('./routes/results');
 const adminRoutes = require('./routes/admin');
 const preTournamentRoutes = require('./routes/pretournament');
+const wcGroupsRoutes = require('./routes/wcgroups');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -39,6 +40,7 @@ app.use('/api/groups/:groupId/leaderboard', leaderboardRoutes(db));
 app.use('/api/groups/:groupId/results', resultsRoutes(db));
 app.use('/api/groups/:groupId/admin', adminRoutes(db));
 app.use('/api/groups/:groupId/pre-tournament', preTournamentRoutes(db));
+app.use('/api/wc-groups', wcGroupsRoutes(db));
 
 // Health check
 app.get('/api/health', (req, res) => {

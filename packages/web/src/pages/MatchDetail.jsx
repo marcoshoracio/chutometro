@@ -4,6 +4,7 @@ import api from '../api/client';
 import PredictionInput from '../components/PredictionInput';
 import CountdownTimer from '../components/CountdownTimer';
 import { useAuth } from '../contexts/AuthContext';
+import { getFlag } from '../utils/flags';
 
 const STAGE_LABELS = {
   GROUP_STAGE: 'Fase de Grupos',
@@ -102,7 +103,9 @@ export default function MatchDetail() {
         </div>
 
         <div className="flex items-center justify-center gap-4 py-3">
-          <span className="font-bold text-lg flex-1 text-right">{match.homeTeam}</span>
+          <span className="font-bold text-lg flex-1 text-right">
+            {match.homeTeam} {getFlag(match.homeTeam)}
+          </span>
 
           {finished || live ? (
             <div className="flex items-center gap-2 min-w-[80px] justify-center">
@@ -121,7 +124,9 @@ export default function MatchDetail() {
             </div>
           )}
 
-          <span className="font-bold text-lg flex-1 text-left">{match.awayTeam}</span>
+          <span className="font-bold text-lg flex-1 text-left">
+            {getFlag(match.awayTeam)} {match.awayTeam}
+          </span>
         </div>
 
         {!finished && !live && (

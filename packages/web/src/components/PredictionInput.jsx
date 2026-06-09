@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getFlag } from '../utils/flags';
 
 export default function PredictionInput({
   homeTeam,
@@ -62,13 +63,13 @@ export default function PredictionInput({
         <ScoreInput
           value={home}
           onChange={(v) => setHome(String(v))}
-          label={homeTeam}
+          label={`${homeTeam} ${getFlag(homeTeam)}`}
         />
         <span className="text-3xl font-bold text-muted mt-6">–</span>
         <ScoreInput
           value={away}
           onChange={(v) => setAway(String(v))}
-          label={awayTeam}
+          label={`${getFlag(awayTeam)} ${awayTeam}`}
         />
       </div>
 
