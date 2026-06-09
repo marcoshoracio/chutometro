@@ -45,6 +45,7 @@ module.exports = function authRoutes(db) {
       return res.json({ message: 'Link enviado' });
     }
 
+    console.log(`\n[magic-link] ${magicLink}\n`);
     console.log(`[auth] Sending email to ${normalizedEmail} via Resend`);
     try {
       await resend.emails.send({
