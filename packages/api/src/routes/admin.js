@@ -1,0 +1,129 @@
+'use strict';
+
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
+const { authenticate, requireGroupAdmin } = require('../middleware/auth');
+
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+module.exports = function adminRoutes(db) {
+  const router = express.Router({ mergeParams: true });
+
+  // GET /api/groups/:groupId/admin
+  router.get('/', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { groupId } = req.params;
+    const group = req.group;
+
+    const members = db.prepare(`
+      SELECT u.id, u.email, u.display_name, gm.joined_at,
+        COALESCE(SUM(s.final_points), 0) as total_points
+      FROM group_members gm
+      JOIN users u ON u.id = gm.user_id
+      LEFT JOIN scores s ON s.user_id = u.id AND s.group_id = gm.group_id
+      WHERE gm.group_id = ?
+      GROUP BY u.id
+      ORDER BY total_points DESC
+    `).all(groupId);
+
+    const matches = db.prepare(`
+      SELECT * FROM matches ORDER BY kickoff_at ASC
+    `).all();
+
+    res.json({
+      group: {
+        id: group.id,
+        name: group.name,
+        code: group.code,
+        adminId: group.admin_id,
+        settings: JSON.parse(group.settings || '{}'),
+        createdAt: group.created_at,
+      },
+      members: members.map((m) => ({
+        id: m.id,
+        email: m.email,
+        displayName: m.display_name,
+        joinedAt: m.joined_at,
+        totalPoints: m.total_points,
+        isAdmin: m.id === group.admin_id,
+      })),
+      matches: matches.map((m) => ({
+        id: m.id,
+        matchNumber: m.match_number,
+        stage: m.stage,
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        kickoffAt: m.kickoff_at,
+        homeScore: m.home_score,
+        awayScore: m.away_score,
+        status: m.status,
+      })),
+    });
+  });
+
+  // PUT /api/groups/:groupId/settings
+  router.put('/settings', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { groupId } = req.params;
+    const { jokerEnabled, preTournamentEnabled, knockout90minOnly } = req.body;
+
+    const group = req.group;
+    const current = JSON.parse(group.settings || '{}');
+
+    if (jokerEnabled !== undefined) current.joker_enabled = Boolean(jokerEnabled);
+    if (preTournamentEnabled !== undefined) current.pre_tournament_enabled = Boolean(preTournamentEnabled);
+    if (knockout90minOnly !== undefined) current.knockout_90min_only = Boolean(knockout90minOnly);
+
+    db.prepare('UPDATE groups SET settings = ? WHERE id = ?').run(JSON.stringify(current), groupId);
+
+    res.json({ settings: current });
+  });
+
+  // POST /api/groups/:groupId/invite — regenerate invite code
+  router.post('/invite', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { groupId } = req.params;
+
+    let code;
+    let attempts = 0;
+    do {
+      code = generateCode();
+      attempts++;
+      if (attempts > 20) return res.status(500).json({ error: 'Não foi possível gerar código único' });
+    } while (db.prepare('SELECT id FROM groups WHERE code = ? AND id != ?').get(code, groupId));
+
+    db.prepare('UPDATE groups SET code = ? WHERE id = ?').run(code, groupId);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.json({
+      code,
+      inviteUrl: `${frontendUrl}/join?code=${code}`,
+    });
+  });
+
+  // DELETE /api/groups/:groupId/members/:userId
+  router.delete('/members/:userId', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { groupId } = req.params;
+    const { userId } = req.params;
+
+    if (userId === req.user.userId) {
+      return res.status(400).json({ error: 'Você não pode remover a si mesmo como administrador' });
+    }
+
+    const result = db
+      .prepare('DELETE FROM group_members WHERE group_id = ? AND user_id = ?')
+      .run(groupId, userId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Membro não encontrado' });
+    }
+
+    res.json({ message: 'Membro removido com sucesso' });
+  });
+
+  return router;
+};
