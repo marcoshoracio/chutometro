@@ -39,12 +39,6 @@ module.exports = function authRoutes(db) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const magicLink = `${frontendUrl}/auth/verify?token=${token}`;
 
-    const transporter = getTransporter();
-    if (!transporter) {
-      console.log(`\n[magic-link] ${magicLink}\n`);
-      return res.json({ message: 'Link enviado (veja o console em modo dev)' });
-    }
-
     const resend = getResend();
     if (!resend) {
       console.log(`\n[magic-link] ${magicLink}\n`);
