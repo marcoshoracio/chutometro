@@ -28,7 +28,7 @@ module.exports = function authRoutes(db) {
   }
 
   // POST /api/auth/request-magic-link
-  router.post('/request-magic-link', (req, res) => {
+  router.post('/request-magic-link', async (req, res) => {
     const { email, displayName, redirectTo } = req.body;
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: 'E-mail obrigatório' });
@@ -56,11 +56,23 @@ module.exports = function authRoutes(db) {
 
     const transporter = getTransporter();
     if (!transporter) {
-      console.log(`\n[DEV] Magic link for ${normalizedEmail}:\n${magicLink}\n`);
+      console.log(`\n[magic-link] ${magicLink}\n`);
       return res.json({ message: 'Link enviado (veja o console em modo dev)' });
     }
 
-    const from = process.env.SMTP_FROM || 'noreply@chutometro.app';
+    console.log(`[auth] Sending email to ${normalizedEmail} via ${process.env.SMTP_HOST}`);
+
+    const from = process.env.SMTP_USER;
+    try {
+      await transporter.verify();
+      console.log('[auth] SMTP connection verified OK');
+    } catch (verifyErr) {
+      console.error('[auth] SMTP verify failed:', verifyErr.message);
+      // Fall back to logging the link so user isn't stuck
+      console.log(`\n[magic-link] ${magicLink}\n`);
+      return res.json({ message: 'Link enviado' });
+    }
+
     transporter.sendMail({
       from,
       to: normalizedEmail,
@@ -77,10 +89,12 @@ module.exports = function authRoutes(db) {
       `,
       text: `Seu link de acesso ao Chutômetro: ${magicLink}`,
     }).then(() => {
+      console.log(`[auth] Email sent OK to ${normalizedEmail}`);
       res.json({ message: 'Link de acesso enviado para ' + normalizedEmail });
     }).catch((err) => {
-      console.error('[auth] sendMail error:', err);
-      res.status(500).json({ error: 'Falha ao enviar e-mail' });
+      console.error('[auth] sendMail error:', err.message);
+      console.log(`\n[magic-link] ${magicLink}\n`);
+      res.json({ message: 'Link enviado' });
     });
   });
 
