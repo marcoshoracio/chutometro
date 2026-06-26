@@ -92,6 +92,32 @@ function runMigrations(db) {
     db.exec('ALTER TABLE matches ADD COLUMN is_manual_override INTEGER NOT NULL DEFAULT 0');
   } catch (_) { /* column already exists */ }
 
+  // Fix R32 kickoff dates (previously seeded as July 4+ instead of June 30+)
+  const r32Fix = [
+    ['2026-06-30T18:00:00Z', '2026-07-04T18:00:00Z'],
+    ['2026-06-30T21:00:00Z', '2026-07-04T21:00:00Z'],
+    ['2026-07-01T18:00:00Z', '2026-07-05T18:00:00Z'],
+    ['2026-07-01T21:00:00Z', '2026-07-05T21:00:00Z'],
+    ['2026-07-01T22:00:00Z', '2026-07-06T18:00:00Z'],
+    ['2026-07-02T18:00:00Z', '2026-07-06T21:00:00Z'],
+    ['2026-07-02T21:00:00Z', '2026-07-07T18:00:00Z'],
+    ['2026-07-02T22:00:00Z', '2026-07-07T21:00:00Z'],
+    ['2026-07-03T15:00:00Z', '2026-07-08T15:00:00Z'],
+    ['2026-07-03T18:00:00Z', '2026-07-08T18:00:00Z'],
+    ['2026-07-03T21:00:00Z', '2026-07-08T21:00:00Z'],
+    ['2026-07-03T22:00:00Z', '2026-07-09T15:00:00Z'],
+    ['2026-07-04T15:00:00Z', '2026-07-09T18:00:00Z'],
+    ['2026-07-04T18:00:00Z', '2026-07-09T21:00:00Z'],
+    ['2026-07-04T21:00:00Z', '2026-07-10T18:00:00Z'],
+    ['2026-07-04T22:00:00Z', '2026-07-10T21:00:00Z'],
+  ];
+  const updateKickoff = db.prepare(
+    "UPDATE matches SET kickoff_at = ? WHERE stage = 'ROUND_OF_32' AND kickoff_at = ? AND status = 'SCHEDULED'"
+  );
+  for (const [newDate, oldDate] of r32Fix) {
+    updateKickoff.run(Math.floor(new Date(newDate).getTime() / 1000), Math.floor(new Date(oldDate).getTime() / 1000));
+  }
+
   // Seed matches if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM matches').get();
   if (count.c === 0) {
@@ -220,24 +246,26 @@ function seedMatches(db) {
   }
 
   // Knockout stage — 32 matches total
-  // Round of 32 (Oitavas — 16 matches): July 4-8, 2026
+  // Dates are approximate seeds; football-data.org sync will update them with exact times.
+
+  // Round of 32 (16 matches): June 30 – July 3, 2026
   const r32 = [
-    ['2026-07-04T18:00:00Z', '1º Grupo A', '3º Grupo C/D/E'],
-    ['2026-07-04T21:00:00Z', '1º Grupo B', '3º Grupo A/C/D'],
-    ['2026-07-05T18:00:00Z', '1º Grupo C', '3º Grupo B/E/F'],
-    ['2026-07-05T21:00:00Z', '1º Grupo D', '3º Grupo A/B/F'],
-    ['2026-07-06T18:00:00Z', '1º Grupo E', '3º Grupo G/H/I'],
-    ['2026-07-06T21:00:00Z', '1º Grupo F', '3º Grupo J/K/L'],
-    ['2026-07-07T18:00:00Z', '1º Grupo G', '3º Grupo H/I/J'],
-    ['2026-07-07T21:00:00Z', '1º Grupo H', '3º Grupo G/K/L'],
-    ['2026-07-08T15:00:00Z', '2º Grupo A', '2º Grupo B'],
-    ['2026-07-08T18:00:00Z', '2º Grupo C', '2º Grupo D'],
-    ['2026-07-08T21:00:00Z', '2º Grupo E', '2º Grupo F'],
-    ['2026-07-09T15:00:00Z', '2º Grupo G', '2º Grupo H'],
-    ['2026-07-09T18:00:00Z', '2º Grupo I', '2º Grupo J'],
-    ['2026-07-09T21:00:00Z', '2º Grupo K', '2º Grupo L'],
-    ['2026-07-10T18:00:00Z', '1º Grupo I', '2º Grupo L'],
-    ['2026-07-10T21:00:00Z', '1º Grupo J', '1º Grupo K'],
+    ['2026-06-30T18:00:00Z', '1º Grupo A', '3º Grupo C/D/E'],
+    ['2026-06-30T21:00:00Z', '1º Grupo B', '3º Grupo A/C/D'],
+    ['2026-07-01T18:00:00Z', '1º Grupo C', '3º Grupo B/E/F'],
+    ['2026-07-01T21:00:00Z', '1º Grupo D', '3º Grupo A/B/F'],
+    ['2026-07-01T22:00:00Z', '1º Grupo E', '3º Grupo G/H/I'],
+    ['2026-07-02T18:00:00Z', '1º Grupo F', '3º Grupo J/K/L'],
+    ['2026-07-02T21:00:00Z', '1º Grupo G', '3º Grupo H/I/J'],
+    ['2026-07-02T22:00:00Z', '1º Grupo H', '3º Grupo G/K/L'],
+    ['2026-07-03T15:00:00Z', '2º Grupo A', '2º Grupo B'],
+    ['2026-07-03T18:00:00Z', '2º Grupo C', '2º Grupo D'],
+    ['2026-07-03T21:00:00Z', '2º Grupo E', '2º Grupo F'],
+    ['2026-07-03T22:00:00Z', '2º Grupo G', '2º Grupo H'],
+    ['2026-07-04T15:00:00Z', '2º Grupo I', '2º Grupo J'],
+    ['2026-07-04T18:00:00Z', '2º Grupo K', '2º Grupo L'],
+    ['2026-07-04T21:00:00Z', '1º Grupo I', '2º Grupo L'],
+    ['2026-07-04T22:00:00Z', '1º Grupo J', '1º Grupo K'],
   ];
 
   for (const [dateStr, home, away] of r32) {
@@ -253,16 +281,16 @@ function seedMatches(db) {
     });
   }
 
-  // Round of 16 (Quartas de Final — 8 matches): July 11-14
+  // Round of 16 (8 matches): July 6–9, 2026
   const r16 = [
-    ['2026-07-11T18:00:00Z', 'Vencedor R32-1', 'Vencedor R32-2'],
-    ['2026-07-11T21:00:00Z', 'Vencedor R32-3', 'Vencedor R32-4'],
-    ['2026-07-12T18:00:00Z', 'Vencedor R32-5', 'Vencedor R32-6'],
-    ['2026-07-12T21:00:00Z', 'Vencedor R32-7', 'Vencedor R32-8'],
-    ['2026-07-13T18:00:00Z', 'Vencedor R32-9', 'Vencedor R32-10'],
-    ['2026-07-13T21:00:00Z', 'Vencedor R32-11', 'Vencedor R32-12'],
-    ['2026-07-14T18:00:00Z', 'Vencedor R32-13', 'Vencedor R32-14'],
-    ['2026-07-14T21:00:00Z', 'Vencedor R32-15', 'Vencedor R32-16'],
+    ['2026-07-06T18:00:00Z', 'Vencedor R32-1', 'Vencedor R32-2'],
+    ['2026-07-06T21:00:00Z', 'Vencedor R32-3', 'Vencedor R32-4'],
+    ['2026-07-07T18:00:00Z', 'Vencedor R32-5', 'Vencedor R32-6'],
+    ['2026-07-07T21:00:00Z', 'Vencedor R32-7', 'Vencedor R32-8'],
+    ['2026-07-08T18:00:00Z', 'Vencedor R32-9', 'Vencedor R32-10'],
+    ['2026-07-08T21:00:00Z', 'Vencedor R32-11', 'Vencedor R32-12'],
+    ['2026-07-09T18:00:00Z', 'Vencedor R32-13', 'Vencedor R32-14'],
+    ['2026-07-09T21:00:00Z', 'Vencedor R32-15', 'Vencedor R32-16'],
   ];
 
   for (const [dateStr, home, away] of r16) {
@@ -278,12 +306,12 @@ function seedMatches(db) {
     });
   }
 
-  // Quarter Finals (4 matches): July 16-17
+  // Quarter Finals (4 matches): July 11–12, 2026
   const qf = [
-    ['2026-07-16T18:00:00Z', 'Vencedor R16-1', 'Vencedor R16-2'],
-    ['2026-07-16T21:00:00Z', 'Vencedor R16-3', 'Vencedor R16-4'],
-    ['2026-07-17T18:00:00Z', 'Vencedor R16-5', 'Vencedor R16-6'],
-    ['2026-07-17T21:00:00Z', 'Vencedor R16-7', 'Vencedor R16-8'],
+    ['2026-07-11T18:00:00Z', 'Vencedor R16-1', 'Vencedor R16-2'],
+    ['2026-07-11T21:00:00Z', 'Vencedor R16-3', 'Vencedor R16-4'],
+    ['2026-07-12T18:00:00Z', 'Vencedor R16-5', 'Vencedor R16-6'],
+    ['2026-07-12T21:00:00Z', 'Vencedor R16-7', 'Vencedor R16-8'],
   ];
 
   for (const [dateStr, home, away] of qf) {
@@ -299,17 +327,10 @@ function seedMatches(db) {
     });
   }
 
-  // Semi Finals (2 matches): July 14-15 — actually 2026: July 14 & 15
-  const sf = [
-    ['2026-07-14T21:00:00Z', 'Vencedor QF-1', 'Vencedor QF-2'],
-    ['2026-07-15T21:00:00Z', 'Vencedor QF-3', 'Vencedor QF-4'],
-  ];
-
-  // Note: semifinal dates overlap with R16 above in the simplified schedule.
-  // Adjusting semi-finals to July 18-19 per 2026 schedule
+  // Semi Finals (2 matches): July 15–16, 2026
   const sfAdjusted = [
-    ['2026-07-18T18:00:00Z', 'Vencedor QF-1', 'Vencedor QF-2'],
-    ['2026-07-18T21:00:00Z', 'Vencedor QF-3', 'Vencedor QF-4'],
+    ['2026-07-15T21:00:00Z', 'Vencedor QF-1', 'Vencedor QF-2'],
+    ['2026-07-16T21:00:00Z', 'Vencedor QF-3', 'Vencedor QF-4'],
   ];
 
   for (const [dateStr, home, away] of sfAdjusted) {
@@ -325,7 +346,7 @@ function seedMatches(db) {
     });
   }
 
-  // Third place (1 match): July 18
+  // Third place: July 19, 2026
   matches.push({
     id: uuidv4(),
     external_id: null,
@@ -337,7 +358,7 @@ function seedMatches(db) {
     status: 'SCHEDULED',
   });
 
-  // Final (1 match): July 19
+  // Final: July 19, 2026
   matches.push({
     id: uuidv4(),
     external_id: null,
