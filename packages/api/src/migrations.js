@@ -92,6 +92,33 @@ function runMigrations(db) {
     db.exec('ALTER TABLE matches ADD COLUMN is_manual_override INTEGER NOT NULL DEFAULT 0');
   } catch (_) { /* column already exists */ }
 
+  // Seed FIFA WC2026 bracket slot names by match_number (only if still TBD and not manually overridden)
+  // Based on official FIFA bracket: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026
+  const bracketSlots = {
+    73:  ['RSA', 'CAN'],
+    74:  ['GER', '3ABCDF'],
+    75:  ['NED', 'MAR'],
+    76:  ['BRA', 'JPN'],
+    77:  ['FRA', '3CDFGH'],
+    78:  ['CIV', 'NOR'],
+    79:  ['MEX', '3CEFHI'],
+    80:  ['1L',  '3EHIJK'],
+    81:  ['USA', 'BIH'],
+    82:  ['1G',  '3AEHIJ'],
+    83:  ['2K',  '2L'],
+    84:  ['1H',  '2J'],
+    85:  ['SUI', '3EFGIJ'],
+    86:  ['ARG', '2H'],
+    87:  ['1K',  '3DEIJL'],
+    88:  ['AUS', '2G'],
+  };
+  const updateSlot = db.prepare(
+    'UPDATE matches SET home_team = ?, away_team = ? WHERE match_number = ? AND home_team = ? AND away_team = ? AND is_manual_override = 0'
+  );
+  for (const [num, [home, away]] of Object.entries(bracketSlots)) {
+    updateSlot.run(home, away, parseInt(num), 'TBD', 'TBD');
+  }
+
   // Seed matches if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM matches').get();
   if (count.c === 0) {

@@ -335,7 +335,12 @@ function TeamsTab({ matches, groupId, onRefresh }) {
           {knockoutMatches.map((m) => (
             <div key={m.id} className="px-4 py-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-muted w-12">{STAGE_LABELS[m.stage]}</span>
+                <span className="text-xs text-muted w-16 shrink-0 leading-tight">
+                  <span className="font-mono font-bold text-white">{m.matchNumber ? `M${m.matchNumber}` : STAGE_LABELS[m.stage]}</span>
+                  <span className="block text-muted/70">
+                    {m.kickoffAt ? new Date(m.kickoffAt * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''}
+                  </span>
+                </span>
                 {editing === m.id ? (
                   <div className="flex-1 flex items-center gap-2">
                     <input
