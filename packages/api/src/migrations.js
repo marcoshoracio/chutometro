@@ -119,6 +119,20 @@ function runMigrations(db) {
     updateSlot.run(home, away, parseInt(num), 'TBD', 'TBD');
   }
 
+  // Dedup: remove duplicate knockout matches with full team names inserted by API sync
+  // Keep the row with the lower kickoff_at tie-break (our seeded one), delete the API duplicate
+  db.exec(`
+    DELETE FROM matches
+    WHERE id IN (
+      SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY stage, kickoff_at ORDER BY rowid ASC) as rn
+        FROM matches
+        WHERE stage IN ('ROUND_OF_32','ROUND_OF_16','QUARTER_FINALS','SEMI_FINALS','THIRD_PLACE','FINAL')
+      ) WHERE rn > 1
+    )
+    AND id NOT IN (SELECT DISTINCT match_id FROM predictions)
+  `);
+
   // Seed matches if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM matches').get();
   if (count.c === 0) {

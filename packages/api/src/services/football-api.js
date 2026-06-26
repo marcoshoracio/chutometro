@@ -85,6 +85,35 @@ async function syncFinishedMatches() {
   }
 }
 
+// Maps football-data.org full team names to short FIFA codes
+const TEAM_CODE = {
+  'South Africa': 'RSA', 'Canada': 'CAN', 'Germany': 'GER', 'France': 'FRA',
+  'Netherlands': 'NED', 'Morocco': 'MAR', 'Brazil': 'BRA', 'Japan': 'JPN',
+  'Ivory Coast': 'CIV', "Côte d'Ivoire": 'CIV', 'Norway': 'NOR', 'Mexico': 'MEX',
+  'United States': 'USA', 'Bosnia and Herzegovina': 'BIH', 'Switzerland': 'SUI',
+  'Argentina': 'ARG', 'Australia': 'AUS', 'Spain': 'ESP', 'Portugal': 'POR',
+  'England': 'ENG', 'Belgium': 'BEL', 'Croatia': 'CRO', 'Uruguay': 'URU',
+  'Colombia': 'COL', 'Ecuador': 'ECU', 'Chile': 'CHI', 'Peru': 'PER',
+  'Senegal': 'SEN', 'Ghana': 'GHA', 'Cameroon': 'CMR', 'Nigeria': 'NGA',
+  'Egypt': 'EGY', 'Algeria': 'ALG', 'Tunisia': 'TUN', 'Qatar': 'QAT',
+  'Saudi Arabia': 'KSA', 'Iran': 'IRN', 'South Korea': 'KOR', 'Japan': 'JPN',
+  'Turkey': 'TUR', 'Ukraine': 'UKR', 'Poland': 'POL', 'Denmark': 'DEN',
+  'Sweden': 'SWE', 'Serbia': 'SRB', 'Romania': 'ROU', 'Hungary': 'HUN',
+  'Slovakia': 'SVK', 'Slovenia': 'SVN', 'Czech Republic': 'CZE', 'Czechia': 'CZE',
+  'Austria': 'AUT', 'Scotland': 'SCO', 'Wales': 'WAL', 'Greece': 'GRE',
+  'Venezuela': 'VEN', 'Bolivia': 'BOL', 'Paraguay': 'PAR', 'Costa Rica': 'CRC',
+  'Panama': 'PAN', 'Honduras': 'HON', 'El Salvador': 'SLV', 'Jamaica': 'JAM',
+  'New Zealand': 'NZL', 'Indonesia': 'IDN', 'Thailand': 'THA', 'Vietnam': 'VIE',
+  'China': 'CHN', 'India': 'IND', 'Mali': 'MLI', 'Senegal': 'SEN',
+  'Mozambique': 'MOZ', 'Tanzania': 'TAN', 'Angola': 'ANG', 'Zambia': 'ZAM',
+  'DR Congo': 'COD', 'Zimbabwe': 'ZIM',
+};
+
+function toCode(fullName) {
+  if (!fullName || fullName === 'TBD') return 'TBD';
+  return TEAM_CODE[fullName] || fullName;
+}
+
 const STAGE_MAP = {
   'GROUP_STAGE': 'GROUP_STAGE',
   'LAST_32': 'ROUND_OF_32',
@@ -111,8 +140,8 @@ async function syncAllMatches() {
     for (const m of apiMatches) {
       const kickoffAt = Math.floor(new Date(m.utcDate).getTime() / 1000);
       const stage = STAGE_MAP[m.stage] || m.stage || 'GROUP_STAGE';
-      const homeTeam = m.homeTeam?.name || 'TBD';
-      const awayTeam = m.awayTeam?.name || 'TBD';
+      const homeTeam = toCode(m.homeTeam?.name) || 'TBD';
+      const awayTeam = toCode(m.awayTeam?.name) || 'TBD';
       const status = m.status === 'FINISHED' ? 'FINISHED'
         : m.status === 'IN_PLAY' || m.status === 'PAUSED' ? 'LIVE'
         : 'SCHEDULED';
@@ -120,10 +149,10 @@ async function syncAllMatches() {
       // 1. Try to find by external_id
       let existing = db.prepare('SELECT id FROM matches WHERE external_id = ?').get(m.id);
 
-      // 2. Fall back to matching by stage + kickoff time (±30 min) for unseeded matches
+      // 2. Fall back to stage + kickoff proximity (±30 min) — works for both NULL and wrong external_ids
       if (!existing) {
         existing = db.prepare(
-          'SELECT id FROM matches WHERE stage = ? AND ABS(kickoff_at - ?) <= 1800 AND external_id IS NULL LIMIT 1'
+          'SELECT id FROM matches WHERE stage = ? AND ABS(kickoff_at - ?) <= 1800 LIMIT 1'
         ).get(stage, kickoffAt);
         if (existing) {
           db.prepare('UPDATE matches SET external_id = ? WHERE id = ?').run(m.id, existing.id);
