@@ -18,7 +18,6 @@ export default function Layout() {
     { to: `/g/${groupId}/fixtures`, label: 'Jogos' },
     { to: `/g/${groupId}/bracket`, label: 'Chave' },
     { to: `/g/${groupId}/leaderboard`, label: 'Classificação' },
-    { to: `/g/${groupId}/grupos`, label: 'Grupos' },
   ];
 
   return (
@@ -85,17 +84,6 @@ export default function Layout() {
               </NavLink>
             ))}
             <NavLink
-              to={`/g/${groupId}/grupos`}
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'bg-pitch text-white' : 'text-muted hover:text-white'
-                }`
-              }
-            >
-              Grupos
-            </NavLink>
-            <NavLink
               to={`/g/${groupId}/admin`}
               onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
@@ -141,7 +129,6 @@ export default function Layout() {
             {item.label === 'Jogos' && <span className="text-lg mb-0.5">📅</span>}
             {item.label === 'Classificação' && <span className="text-lg mb-0.5">🏆</span>}
             {item.label === 'Chave' && <span className="text-lg mb-0.5">🏟️</span>}
-            {item.label === 'Grupos' && <span className="text-lg mb-0.5">🌍</span>}
             {item.label}
           </NavLink>
         ))}
