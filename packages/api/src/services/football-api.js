@@ -160,10 +160,15 @@ async function syncAllMatches() {
       }
 
       if (existing) {
+        // Don't overwrite slot names (3ABCDF, 1G, etc.) with TBD from the API —
+        // keep the existing value until the real team is known.
+        const row = db.prepare('SELECT home_team, away_team FROM matches WHERE id = ?').get(existing.id);
+        const finalHome = homeTeam !== 'TBD' ? homeTeam : (row?.home_team || 'TBD');
+        const finalAway = awayTeam !== 'TBD' ? awayTeam : (row?.away_team || 'TBD');
         db.prepare(`
           UPDATE matches SET home_team = ?, away_team = ?, kickoff_at = ?, status = ?
           WHERE id = ?
-        `).run(homeTeam, awayTeam, kickoffAt, status, existing.id);
+        `).run(finalHome, finalAway, kickoffAt, status, existing.id);
 
         if (status === 'FINISHED') {
           const hs = m.score?.fullTime?.home ?? null;
