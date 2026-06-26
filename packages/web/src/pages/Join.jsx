@@ -113,7 +113,10 @@ export default function Join() {
 
           <div className="card p-6 space-y-4">
             <h2 className="font-bold text-lg">Entrar em um grupo</h2>
-            <form onSubmit={handleLookupCode} className="space-y-3">
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleJoinWithCode(code.trim().toUpperCase()); }}
+              className="space-y-3"
+            >
               <input
                 type="text"
                 className="input uppercase tracking-widest font-mono text-center text-lg"
@@ -123,8 +126,8 @@ export default function Join() {
                 maxLength={6}
               />
               {error && <p className="text-red-400 text-sm">{error}</p>}
-              <button type="submit" disabled={loading} className="btn-primary w-full">
-                {loading ? 'Buscando...' : 'Entrar no Grupo'}
+              <button type="submit" disabled={loading || code.trim().length < 6} className="btn-primary w-full">
+                {loading ? 'Entrando...' : 'Entrar no Grupo'}
               </button>
             </form>
           </div>
