@@ -27,11 +27,12 @@ export default function Dashboard() {
   if (loading) return <Spinner />;
   if (error) return <ErrorMsg msg={error} />;
 
-  const now = Math.floor(Date.now() / 1000);
-  const upcoming = data.matches
+  const KNOCKOUT = ['ROUND_OF_32', 'ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'THIRD_PLACE', 'FINAL'];
+  const knockout = data.matches.filter((m) => KNOCKOUT.includes(m.stage));
+  const upcoming = knockout
     .filter((m) => m.status === 'SCHEDULED' || m.status === 'LIVE')
-    .slice(0, 2);
-  const recent = data.matches
+    .slice(0, 3);
+  const recent = knockout
     .filter((m) => m.status === 'FINISHED')
     .slice(-3)
     .reverse();
