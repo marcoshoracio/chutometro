@@ -112,11 +112,12 @@ function runMigrations(db) {
     87:  ['1K',  '3DEIJL'],
     88:  ['AUS', '2G'],
   };
+  // Always apply bracket slot names unless the match is finished or manually overridden
   const updateSlot = db.prepare(
-    'UPDATE matches SET home_team = ?, away_team = ? WHERE match_number = ? AND home_team = ? AND away_team = ? AND is_manual_override = 0'
+    "UPDATE matches SET home_team = ?, away_team = ? WHERE match_number = ? AND is_manual_override = 0 AND status != 'FINISHED'"
   );
   for (const [num, [home, away]] of Object.entries(bracketSlots)) {
-    updateSlot.run(home, away, parseInt(num), 'TBD', 'TBD');
+    updateSlot.run(home, away, parseInt(num));
   }
 
   // Dedup: remove duplicate knockout matches with full team names inserted by API sync
