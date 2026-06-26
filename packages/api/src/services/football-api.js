@@ -85,57 +85,80 @@ async function syncFinishedMatches() {
   }
 }
 
-async function syncScheduledMatches() {
+const STAGE_MAP = {
+  'GROUP_STAGE': 'GROUP_STAGE',
+  'LAST_32': 'ROUND_OF_32',
+  'LAST_16': 'ROUND_OF_16',
+  'QUARTER_FINALS': 'QUARTER_FINALS',
+  'SEMI_FINALS': 'SEMI_FINALS',
+  'THIRD_PLACE': 'THIRD_PLACE',
+  'FINAL': 'FINAL',
+};
+
+async function syncAllMatches() {
   if (!API_KEY) return;
 
   try {
-    const data = await fetchWithAuth(`/competitions/${WC2026_COMPETITION}/matches?status=SCHEDULED`);
-    const scheduled = data.matches || [];
+    const data = await fetchWithAuth(`/competitions/${WC2026_COMPETITION}/matches`);
+    const apiMatches = data.matches || [];
+    const { v4: uuidv4 } = require('uuid');
 
     const insert = db.prepare(`
       INSERT OR IGNORE INTO matches (id, external_id, stage, match_number, home_team, away_team, kickoff_at, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'SCHEDULED')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const { v4: uuidv4 } = require('uuid');
+    for (const m of apiMatches) {
+      const kickoffAt = Math.floor(new Date(m.utcDate).getTime() / 1000);
+      const stage = STAGE_MAP[m.stage] || m.stage || 'GROUP_STAGE';
+      const homeTeam = m.homeTeam?.name || 'TBD';
+      const awayTeam = m.awayTeam?.name || 'TBD';
+      const status = m.status === 'FINISHED' ? 'FINISHED'
+        : m.status === 'IN_PLAY' || m.status === 'PAUSED' ? 'LIVE'
+        : 'SCHEDULED';
 
-    for (const m of scheduled) {
-      const existing = db.prepare('SELECT id FROM matches WHERE external_id = ?').get(m.id);
+      // 1. Try to find by external_id
+      let existing = db.prepare('SELECT id FROM matches WHERE external_id = ?').get(m.id);
+
+      // 2. Fall back to matching by stage + kickoff time (±30 min) for unseeded matches
+      if (!existing) {
+        existing = db.prepare(
+          'SELECT id FROM matches WHERE stage = ? AND ABS(kickoff_at - ?) <= 1800 AND external_id IS NULL LIMIT 1'
+        ).get(stage, kickoffAt);
+        if (existing) {
+          db.prepare('UPDATE matches SET external_id = ? WHERE id = ?').run(m.id, existing.id);
+        }
+      }
+
       if (existing) {
         db.prepare(`
-          UPDATE matches SET home_team = ?, away_team = ?, kickoff_at = ?
-          WHERE external_id = ?
-        `).run(
-          m.homeTeam?.name || '?',
-          m.awayTeam?.name || '?',
-          Math.floor(new Date(m.utcDate).getTime() / 1000),
-          m.id
-        );
+          UPDATE matches SET home_team = ?, away_team = ?, kickoff_at = ?, status = ?
+          WHERE id = ?
+        `).run(homeTeam, awayTeam, kickoffAt, status, existing.id);
+
+        if (status === 'FINISHED') {
+          const hs = m.score?.fullTime?.home ?? null;
+          const as_ = m.score?.fullTime?.away ?? null;
+          if (hs !== null && !db.prepare('SELECT is_manual_override FROM matches WHERE id = ?').get(existing.id)?.is_manual_override) {
+            db.prepare('UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?').run(hs, as_, existing.id);
+            const groups = db.prepare('SELECT DISTINCT group_id FROM predictions WHERE match_id = ?').all(existing.id);
+            for (const { group_id } of groups) {
+              recalculateGroupScores(db, group_id, existing.id);
+            }
+          }
+        }
       } else {
-        const stageMap = {
-          'GROUP_STAGE': 'GROUP_STAGE',
-          'ROUND_OF_32': 'ROUND_OF_32',
-          'LAST_16': 'ROUND_OF_16',
-          'QUARTER_FINALS': 'QUARTER_FINALS',
-          'SEMI_FINALS': 'SEMI_FINALS',
-          'THIRD_PLACE': 'THIRD_PLACE',
-          'FINAL': 'FINAL',
-        };
-        const stage = stageMap[m.stage] || m.stage || 'GROUP_STAGE';
-        insert.run(
-          uuidv4(),
-          m.id,
-          stage,
-          m.matchday || null,
-          m.homeTeam?.name || '?',
-          m.awayTeam?.name || '?',
-          Math.floor(new Date(m.utcDate).getTime() / 1000)
-        );
+        insert.run(uuidv4(), m.id, stage, m.matchday || null, homeTeam, awayTeam, kickoffAt, status);
       }
     }
+    console.log(`[football-api] syncAllMatches: ${apiMatches.length} matches processed`);
   } catch (err) {
-    console.error('[football-api] syncScheduledMatches error:', err.message);
+    console.error('[football-api] syncAllMatches error:', err.message);
   }
+}
+
+async function syncScheduledMatches() {
+  return syncAllMatches();
 }
 
 function hasLiveMatches() {
@@ -151,19 +174,12 @@ function startPolling(database) {
     return;
   }
 
-  // Every 4 minutes — check live matches
-  cron.schedule('*/4 * * * *', async () => {
-    await syncLiveMatches();
-  });
+  // Run a full sync on startup to pull real team names and results
+  syncAllMatches().catch((err) => console.error('[football-api] startup sync error:', err.message));
 
-  // Every 10 minutes — check finished matches
-  cron.schedule('*/10 * * * *', async () => {
-    await syncFinishedMatches();
-  });
-
-  // Once per hour — sync scheduled matches (team names for knockout stage)
-  cron.schedule('0 * * * *', async () => {
-    await syncScheduledMatches();
+  // Every 5 minutes — full sync (live scores, finished results, team name updates)
+  cron.schedule('*/5 * * * *', async () => {
+    await syncAllMatches();
   });
 
   console.log('[football-api] Polling started.');

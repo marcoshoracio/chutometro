@@ -4,8 +4,7 @@ import api from '../api/client';
 import MatchCard from '../components/MatchCard';
 import StageFilter from '../components/StageFilter';
 
-const STAGE_ORDER = [
-  'GROUP_STAGE',
+const KNOCKOUT_STAGES = [
   'ROUND_OF_32',
   'ROUND_OF_16',
   'QUARTER_FINALS',
@@ -15,7 +14,6 @@ const STAGE_ORDER = [
 ];
 
 const STAGE_LABELS = {
-  GROUP_STAGE: 'Fase de Grupos',
   ROUND_OF_32: 'Oitavas de Final',
   ROUND_OF_16: 'Quartas de Final',
   QUARTER_FINALS: 'Quartas de Final',
@@ -41,8 +39,9 @@ export default function Fixtures() {
   if (loading) return <Spinner />;
   if (error) return <div className="card p-6 text-red-400 text-center">{error}</div>;
 
-  const availableStages = [...new Set(matches.map((m) => m.stage))];
-  const filtered = stage === 'ALL' ? matches : matches.filter((m) => m.stage === stage);
+  const knockoutMatches = matches.filter((m) => KNOCKOUT_STAGES.includes(m.stage));
+  const availableStages = [...new Set(knockoutMatches.map((m) => m.stage))];
+  const filtered = stage === 'ALL' ? knockoutMatches : knockoutMatches.filter((m) => m.stage === stage);
 
   // Group by stage
   const grouped = {};
@@ -51,9 +50,9 @@ export default function Fixtures() {
     grouped[m.stage].push(m);
   }
 
-  const stagesPresent = STAGE_ORDER.filter((s) => grouped[s]);
+  const stagesPresent = KNOCKOUT_STAGES.filter((s) => grouped[s]);
 
-  const pendingPredictions = matches.filter(
+  const pendingPredictions = knockoutMatches.filter(
     (m) => !m.locked && !m.prediction && m.status === 'SCHEDULED'
   ).length;
 
