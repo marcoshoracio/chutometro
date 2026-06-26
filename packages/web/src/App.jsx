@@ -12,6 +12,7 @@ import PreTournament from './pages/PreTournament';
 import AuthVerify from './pages/AuthVerify';
 import Layout from './components/Layout';
 import WCGroups from './pages/WCGroups';
+import Bracket from './pages/Bracket';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -44,6 +45,7 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="fixtures" element={<Fixtures />} />
             <Route path="fixtures/:matchId" element={<MatchDetail />} />
+            <Route path="bracket" element={<Bracket />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="admin" element={<AdminPanel />} />
             <Route path="pre-torneio" element={<PreTournament />} />

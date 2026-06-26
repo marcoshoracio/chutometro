@@ -16,6 +16,7 @@ export default function Layout() {
   const navItems = [
     { to: `/g/${groupId}`, label: 'Início', end: true },
     { to: `/g/${groupId}/fixtures`, label: 'Jogos' },
+    { to: `/g/${groupId}/bracket`, label: 'Chave' },
     { to: `/g/${groupId}/leaderboard`, label: 'Classificação' },
     { to: `/g/${groupId}/grupos`, label: 'Grupos' },
   ];
@@ -139,6 +140,7 @@ export default function Layout() {
             {item.label === 'Início' && <span className="text-lg mb-0.5">🏠</span>}
             {item.label === 'Jogos' && <span className="text-lg mb-0.5">📅</span>}
             {item.label === 'Classificação' && <span className="text-lg mb-0.5">🏆</span>}
+            {item.label === 'Chave' && <span className="text-lg mb-0.5">🏟️</span>}
             {item.label === 'Grupos' && <span className="text-lg mb-0.5">🌍</span>}
             {item.label}
           </NavLink>
