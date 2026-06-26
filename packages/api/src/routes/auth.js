@@ -49,7 +49,7 @@ module.exports = function authRoutes(db) {
     console.log(`[auth] Sending email to ${normalizedEmail} via Resend`);
     try {
       await resend.emails.send({
-        from: 'Chutômetro <onboarding@resend.dev>',
+        from: 'Chutômetro <noreply@marcosh.com>',
         to: normalizedEmail,
         subject: 'Seu link de acesso — Chutômetro ⚽',
         html: `
