@@ -27,7 +27,7 @@ module.exports = function resultsRoutes(db) {
     }
 
     db.prepare(`
-      UPDATE matches SET home_score = ?, away_score = ?, status = 'FINISHED' WHERE id = ?
+      UPDATE matches SET home_score = ?, away_score = ?, status = 'FINISHED', is_manual_override = 1 WHERE id = ?
     `).run(hs, as_, matchId);
 
     // Recalculate all scores for this match/group

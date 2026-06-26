@@ -47,7 +47,8 @@ function runMigrations(db) {
       kickoff_at INTEGER NOT NULL,
       home_score INTEGER,
       away_score INTEGER,
-      status TEXT NOT NULL DEFAULT 'SCHEDULED'
+      status TEXT NOT NULL DEFAULT 'SCHEDULED',
+      is_manual_override INTEGER NOT NULL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS predictions (
@@ -85,6 +86,11 @@ function runMigrations(db) {
       UNIQUE(user_id, group_id)
     );
   `);
+
+  // Add is_manual_override column if it doesn't exist (for existing DBs)
+  try {
+    db.exec('ALTER TABLE matches ADD COLUMN is_manual_override INTEGER NOT NULL DEFAULT 0');
+  } catch (_) { /* column already exists */ }
 
   // Seed matches if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM matches').get();

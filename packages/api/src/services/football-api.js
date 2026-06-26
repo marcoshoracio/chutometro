@@ -1,6 +1,7 @@
 'use strict';
 
 const cron = require('node-cron');
+const { recalculateGroupScores } = require('./scoring');
 
 const API_KEY = process.env.FOOTBALL_API_KEY;
 const BASE_URL = 'https://api.football-data.org/v4';
@@ -56,6 +57,7 @@ async function syncFinishedMatches() {
       if (!existing) continue;
 
       if (existing.status === 'FINISHED') continue;
+      if (existing.is_manual_override) continue;
 
       db.prepare(`
         UPDATE matches SET status = 'FINISHED',
@@ -69,6 +71,14 @@ async function syncFinishedMatches() {
         m.awayTeam?.name || existing.away_team,
         existing.id
       );
+
+      // Trigger score recalculation for every group that has predictions for this match
+      const groups = db.prepare(
+        'SELECT DISTINCT group_id FROM predictions WHERE match_id = ?'
+      ).all(existing.id);
+      for (const { group_id } of groups) {
+        recalculateGroupScores(db, group_id, existing.id);
+      }
     }
   } catch (err) {
     console.error('[football-api] syncFinishedMatches error:', err.message);
