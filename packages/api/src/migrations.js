@@ -92,33 +92,33 @@ function runMigrations(db) {
     db.exec('ALTER TABLE matches ADD COLUMN is_manual_override INTEGER NOT NULL DEFAULT 0');
   } catch (_) { /* column already exists */ }
 
-  // Seed FIFA WC2026 bracket slot names by match_number (only if still TBD and not manually overridden)
-  // Based on official FIFA bracket: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026
-  const bracketSlots = {
-    73:  ['RSA', 'CAN'],
-    74:  ['GER', '3ABCDF'],
-    75:  ['NED', 'MAR'],
-    76:  ['BRA', 'JPN'],
-    77:  ['FRA', '3CDFGH'],
-    78:  ['CIV', 'NOR'],
-    79:  ['MEX', '3CEFHI'],
-    80:  ['1L',  '3EHIJK'],
-    81:  ['USA', 'BIH'],
-    82:  ['1G',  '3AEHIJ'],
-    83:  ['2K',  '2L'],
-    84:  ['1H',  '2J'],
-    85:  ['SUI', '3EFGIJ'],
-    86:  ['ARG', '2H'],
-    87:  ['1K',  '3DEIJL'],
-    88:  ['AUS', '2G'],
-  };
-  // Always apply bracket slot names unless the match is finished or manually overridden
-  const updateSlot = db.prepare(
-    "UPDATE matches SET home_team = ?, away_team = ? WHERE match_number = ? AND is_manual_override = 0 AND status != 'FINISHED'"
-  );
-  for (const [num, [home, away]] of Object.entries(bracketSlots)) {
-    updateSlot.run(home, away, parseInt(num));
-  }
+  // Seed FIFA WC2026 bracket slot names by kickoff order (match_number may be null on old DBs)
+  // Sorted by kickoff_at ascending — matches the official FIFA R32 schedule order
+  const r32Slots = [
+    [73, 'RSA', 'CAN'],   // 28/06 19:00 UTC
+    [74, 'GER', '3ABCDF'],// 29/06 17:00 UTC
+    [75, 'NED', 'MAR'],   // 29/06 20:30 UTC
+    [76, 'BRA', 'JPN'],   // 30/06 01:00 UTC
+    [77, 'FRA', '3CDFGH'],// 30/06 17:00 UTC
+    [78, 'CIV', 'NOR'],   // 30/06 21:00 UTC
+    [79, 'MEX', '3CEFHI'],// 01/07 01:00 UTC
+    [80, '1L',  '3EHIJK'],// 01/07 16:00 UTC
+    [81, 'USA', 'BIH'],   // 01/07 20:00 UTC
+    [82, '1G',  '3AEHIJ'],// 02/07 00:00 UTC
+    [83, '2K',  '2L'],    // 02/07 19:00 UTC
+    [84, '1H',  '2J'],    // 02/07 23:00 UTC
+    [85, 'SUI', '3EFGIJ'],// 03/07 03:00 UTC
+    [86, 'ARG', '2H'],    // 03/07 18:00 UTC
+    [87, '1K',  '3DEIJL'],// 03/07 22:00 UTC
+    [88, 'AUS', '2G'],    // 04/07 01:30 UTC
+  ];
+  const r32Rows = db.prepare(
+    "SELECT id FROM matches WHERE stage='ROUND_OF_32' AND is_manual_override=0 AND status!='FINISHED' ORDER BY kickoff_at ASC"
+  ).all();
+  const updateSlot = db.prepare('UPDATE matches SET match_number=?, home_team=?, away_team=? WHERE id=?');
+  r32Rows.forEach((row, i) => {
+    if (r32Slots[i]) updateSlot.run(r32Slots[i][0], r32Slots[i][1], r32Slots[i][2], row.id);
+  });
 
   // Dedup: remove duplicate knockout matches with full team names inserted by API sync
   // Keep the row with the lower kickoff_at tie-break (our seeded one), delete the API duplicate
