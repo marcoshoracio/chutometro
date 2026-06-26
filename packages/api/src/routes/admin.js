@@ -3,6 +3,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { authenticate, requireGroupAdmin } = require('../middleware/auth');
+const { syncAllMatches } = require('../services/football-api');
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -103,6 +104,31 @@ module.exports = function adminRoutes(db) {
       code,
       inviteUrl: `${frontendUrl}/join?code=${code}`,
     });
+  });
+
+  // POST /api/groups/:groupId/admin/sync — force a match sync from football-data.org
+  router.post('/sync', authenticate, requireGroupAdmin(db), async (req, res) => {
+    try {
+      await syncAllMatches();
+      res.json({ message: 'Sincronização concluída' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // PATCH /api/groups/:groupId/admin/matches/:matchId/teams — update team names manually
+  router.patch('/matches/:matchId/teams', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { matchId } = req.params;
+    const { homeTeam, awayTeam } = req.body;
+    if (!homeTeam && !awayTeam) return res.status(400).json({ error: 'Forneça ao menos um nome de time' });
+
+    const match = db.prepare('SELECT id FROM matches WHERE id = ?').get(matchId);
+    if (!match) return res.status(404).json({ error: 'Jogo não encontrado' });
+
+    if (homeTeam) db.prepare('UPDATE matches SET home_team = ? WHERE id = ?').run(homeTeam.trim(), matchId);
+    if (awayTeam) db.prepare('UPDATE matches SET away_team = ? WHERE id = ?').run(awayTeam.trim(), matchId);
+
+    res.json({ message: 'Times atualizados' });
   });
 
   // DELETE /api/groups/:groupId/members/:userId

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
-const TABS = ['Jogadores', 'Resultados', 'Configurações'];
+const TABS = ['Jogadores', 'Times', 'Resultados', 'Configurações'];
 
 export default function AdminPanel() {
   const { groupId } = useParams();
@@ -88,6 +88,9 @@ export default function AdminPanel() {
 
       {tab === 'Jogadores' && (
         <MembersTab members={data.members} groupId={groupId} adminId={data.group.adminId} currentUserId={user?.id} onRefresh={load} />
+      )}
+      {tab === 'Times' && (
+        <TeamsTab matches={data.matches} groupId={groupId} onRefresh={load} />
       )}
       {tab === 'Resultados' && (
         <ResultsTab matches={data.matches} groupId={groupId} onRefresh={load} />
@@ -253,6 +256,123 @@ function ResultsTab({ matches, groupId, onRefresh }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const KNOCKOUT_STAGES = ['ROUND_OF_32', 'ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'THIRD_PLACE', 'FINAL'];
+const STAGE_LABELS = {
+  ROUND_OF_32: 'Oitavas', ROUND_OF_16: 'Quartas', QUARTER_FINALS: 'Semi',
+  SEMI_FINALS: 'Final 4', THIRD_PLACE: '3º', FINAL: 'Final',
+};
+
+function TeamsTab({ matches, groupId, onRefresh }) {
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
+  const [editing, setEditing] = useState(null); // matchId
+  const [form, setForm] = useState({ homeTeam: '', awayTeam: '' });
+  const [saving, setSaving] = useState(false);
+
+  const knockoutMatches = matches
+    .filter((m) => KNOCKOUT_STAGES.includes(m.stage))
+    .sort((a, b) => a.kickoffAt - b.kickoffAt);
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncMsg('');
+    try {
+      await api.post(`/groups/${groupId}/admin/sync`);
+      setSyncMsg('Sincronizado! Recarregando...');
+      setTimeout(() => { onRefresh(); setSyncMsg(''); }, 1000);
+    } catch (err) {
+      setSyncMsg('Erro: ' + err.message);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  function startEdit(match) {
+    setEditing(match.id);
+    setForm({ homeTeam: match.homeTeam === 'TBD' ? '' : match.homeTeam, awayTeam: match.awayTeam === 'TBD' ? '' : match.awayTeam });
+  }
+
+  async function handleSave(matchId) {
+    setSaving(true);
+    try {
+      await api.patch(`/groups/${groupId}/admin/matches/${matchId}/teams`, {
+        homeTeam: form.homeTeam || undefined,
+        awayTeam: form.awayTeam || undefined,
+      });
+      setEditing(null);
+      onRefresh();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-sm">Sincronizar da API</h3>
+            <p className="text-xs text-muted">Puxa nomes de times confirmados do football-data.org</p>
+          </div>
+          <button onClick={handleSync} disabled={syncing} className="btn-primary text-sm">
+            {syncing ? '...' : '↻ Sincronizar'}
+          </button>
+        </div>
+        {syncMsg && <p className="text-xs text-green-400">{syncMsg}</p>}
+      </div>
+
+      <div className="card overflow-hidden">
+        <div className="px-4 py-3 border-b border-navy-border">
+          <h3 className="font-semibold text-sm text-muted">Editar times manualmente</h3>
+        </div>
+        <div className="divide-y divide-navy-border">
+          {knockoutMatches.map((m) => (
+            <div key={m.id} className="px-4 py-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted w-12">{STAGE_LABELS[m.stage]}</span>
+                {editing === m.id ? (
+                  <div className="flex-1 flex items-center gap-2">
+                    <input
+                      className="input text-xs flex-1"
+                      placeholder="Time casa"
+                      value={form.homeTeam}
+                      onChange={(e) => setForm({ ...form, homeTeam: e.target.value })}
+                    />
+                    <span className="text-muted text-xs">×</span>
+                    <input
+                      className="input text-xs flex-1"
+                      placeholder="Time fora"
+                      value={form.awayTeam}
+                      onChange={(e) => setForm({ ...form, awayTeam: e.target.value })}
+                    />
+                    <button onClick={() => handleSave(m.id)} disabled={saving} className="btn-primary text-xs px-2 py-1">✓</button>
+                    <button onClick={() => setEditing(null)} className="text-muted hover:text-white text-xs px-2 py-1">✕</button>
+                  </div>
+                ) : (
+                  <>
+                    <span className={`flex-1 text-sm text-center ${m.homeTeam === 'TBD' ? 'text-muted italic' : ''}`}>
+                      {m.homeTeam}
+                    </span>
+                    <span className="text-muted text-xs">×</span>
+                    <span className={`flex-1 text-sm text-center ${m.awayTeam === 'TBD' ? 'text-muted italic' : ''}`}>
+                      {m.awayTeam}
+                    </span>
+                    <button onClick={() => startEdit(m)} className="text-xs text-pitch-light hover:underline">
+                      editar
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

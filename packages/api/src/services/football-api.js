@@ -185,4 +185,4 @@ function startPolling(database) {
   console.log('[football-api] Polling started.');
 }
 
-module.exports = { startPolling, syncLiveMatches, syncFinishedMatches, syncScheduledMatches };
+module.exports = { startPolling, syncAllMatches, syncLiveMatches, syncFinishedMatches, syncScheduledMatches };

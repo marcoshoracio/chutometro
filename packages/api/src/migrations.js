@@ -92,36 +92,80 @@ function runMigrations(db) {
     db.exec('ALTER TABLE matches ADD COLUMN is_manual_override INTEGER NOT NULL DEFAULT 0');
   } catch (_) { /* column already exists */ }
 
-  // Fix R32 kickoff dates (previously seeded as July 4+ instead of June 30+)
-  const r32Fix = [
-    ['2026-06-30T18:00:00Z', '2026-07-04T18:00:00Z'],
-    ['2026-06-30T21:00:00Z', '2026-07-04T21:00:00Z'],
-    ['2026-07-01T18:00:00Z', '2026-07-05T18:00:00Z'],
-    ['2026-07-01T21:00:00Z', '2026-07-05T21:00:00Z'],
-    ['2026-07-01T22:00:00Z', '2026-07-06T18:00:00Z'],
-    ['2026-07-02T18:00:00Z', '2026-07-06T21:00:00Z'],
-    ['2026-07-02T21:00:00Z', '2026-07-07T18:00:00Z'],
-    ['2026-07-02T22:00:00Z', '2026-07-07T21:00:00Z'],
-    ['2026-07-03T15:00:00Z', '2026-07-08T15:00:00Z'],
-    ['2026-07-03T18:00:00Z', '2026-07-08T18:00:00Z'],
-    ['2026-07-03T21:00:00Z', '2026-07-08T21:00:00Z'],
-    ['2026-07-03T22:00:00Z', '2026-07-09T15:00:00Z'],
-    ['2026-07-04T15:00:00Z', '2026-07-09T18:00:00Z'],
-    ['2026-07-04T18:00:00Z', '2026-07-09T21:00:00Z'],
-    ['2026-07-04T21:00:00Z', '2026-07-10T18:00:00Z'],
-    ['2026-07-04T22:00:00Z', '2026-07-10T21:00:00Z'],
-  ];
-  const updateKickoff = db.prepare(
-    "UPDATE matches SET kickoff_at = ? WHERE stage = 'ROUND_OF_32' AND kickoff_at = ? AND status = 'SCHEDULED'"
-  );
-  for (const [newDate, oldDate] of r32Fix) {
-    updateKickoff.run(Math.floor(new Date(newDate).getTime() / 1000), Math.floor(new Date(oldDate).getTime() / 1000));
-  }
-
   // Seed matches if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM matches').get();
   if (count.c === 0) {
     seedMatches(db);
+  }
+
+  // Replace all seeded knockout matches (external_id IS NULL) with real API data.
+  // Runs after seeding so it handles both fresh and existing DBs.
+  const knockoutStages = ['ROUND_OF_32', 'ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'THIRD_PLACE', 'FINAL'];
+  const hasUnlinkedKnockout = db.prepare(
+    `SELECT COUNT(*) as c FROM matches WHERE stage IN (${knockoutStages.map(() => '?').join(',')}) AND external_id IS NULL`
+  ).get(...knockoutStages);
+
+  if (hasUnlinkedKnockout.c > 0) {
+    // Delete placeholder knockouts that haven't been predicted
+    db.prepare(
+      `DELETE FROM matches WHERE stage IN (${knockoutStages.map(() => '?').join(',')}) AND external_id IS NULL
+       AND id NOT IN (SELECT DISTINCT match_id FROM predictions)`
+    ).run(...knockoutStages);
+
+    // Seed real knockout matches from football-data.org (external IDs and exact dates known)
+    const insertKnockout = db.prepare(`
+      INSERT OR IGNORE INTO matches (id, external_id, stage, match_number, home_team, away_team, kickoff_at, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'SCHEDULED')
+    `);
+
+    const realKnockout = [
+      // ROUND_OF_32 — June 28 – July 4
+      [537417, 'ROUND_OF_32', 73,  'TBD', 'TBD', '2026-06-28T19:00:00Z'],
+      [537423, 'ROUND_OF_32', 74,  'TBD', 'TBD', '2026-06-29T17:00:00Z'],
+      [537415, 'ROUND_OF_32', 75,  'TBD', 'TBD', '2026-06-29T20:30:00Z'],
+      [537418, 'ROUND_OF_32', 76,  'TBD', 'TBD', '2026-06-30T01:00:00Z'],
+      [537424, 'ROUND_OF_32', 77,  'TBD', 'TBD', '2026-06-30T17:00:00Z'],
+      [537416, 'ROUND_OF_32', 78,  'TBD', 'TBD', '2026-06-30T21:00:00Z'],
+      [537425, 'ROUND_OF_32', 79,  'TBD', 'TBD', '2026-07-01T01:00:00Z'],
+      [537426, 'ROUND_OF_32', 80,  'TBD', 'TBD', '2026-07-01T16:00:00Z'],
+      [537422, 'ROUND_OF_32', 81,  'TBD', 'TBD', '2026-07-01T20:00:00Z'],
+      [537421, 'ROUND_OF_32', 82,  'TBD', 'TBD', '2026-07-02T00:00:00Z'],
+      [537420, 'ROUND_OF_32', 83,  'TBD', 'TBD', '2026-07-02T19:00:00Z'],
+      [537419, 'ROUND_OF_32', 84,  'TBD', 'TBD', '2026-07-02T23:00:00Z'],
+      [537429, 'ROUND_OF_32', 85,  'TBD', 'TBD', '2026-07-03T03:00:00Z'],
+      [537428, 'ROUND_OF_32', 86,  'TBD', 'TBD', '2026-07-03T18:00:00Z'],
+      [537427, 'ROUND_OF_32', 87,  'TBD', 'TBD', '2026-07-03T22:00:00Z'],
+      [537430, 'ROUND_OF_32', 88,  'TBD', 'TBD', '2026-07-04T01:30:00Z'],
+      // ROUND_OF_16 — July 4–7
+      [537376, 'ROUND_OF_16', 89,  'TBD', 'TBD', '2026-07-04T17:00:00Z'],
+      [537375, 'ROUND_OF_16', 90,  'TBD', 'TBD', '2026-07-04T21:00:00Z'],
+      [537377, 'ROUND_OF_16', 91,  'TBD', 'TBD', '2026-07-05T20:00:00Z'],
+      [537378, 'ROUND_OF_16', 92,  'TBD', 'TBD', '2026-07-06T00:00:00Z'],
+      [537379, 'ROUND_OF_16', 93,  'TBD', 'TBD', '2026-07-06T19:00:00Z'],
+      [537380, 'ROUND_OF_16', 94,  'TBD', 'TBD', '2026-07-07T00:00:00Z'],
+      [537381, 'ROUND_OF_16', 95,  'TBD', 'TBD', '2026-07-07T16:00:00Z'],
+      [537382, 'ROUND_OF_16', 96,  'TBD', 'TBD', '2026-07-07T20:00:00Z'],
+      // QUARTER_FINALS — July 9–12
+      [537383, 'QUARTER_FINALS', 97, 'TBD', 'TBD', '2026-07-09T20:00:00Z'],
+      [537384, 'QUARTER_FINALS', 98, 'TBD', 'TBD', '2026-07-10T19:00:00Z'],
+      [537385, 'QUARTER_FINALS', 99, 'TBD', 'TBD', '2026-07-11T21:00:00Z'],
+      [537386, 'QUARTER_FINALS', 100,'TBD', 'TBD', '2026-07-12T01:00:00Z'],
+      // SEMI_FINALS — July 14–15
+      [537387, 'SEMI_FINALS', 101, 'TBD', 'TBD', '2026-07-14T19:00:00Z'],
+      [537388, 'SEMI_FINALS', 102, 'TBD', 'TBD', '2026-07-15T19:00:00Z'],
+      // THIRD_PLACE — July 18
+      [537389, 'THIRD_PLACE', 103, 'TBD', 'TBD', '2026-07-18T21:00:00Z'],
+      // FINAL — July 19
+      [537390, 'FINAL',       104, 'TBD', 'TBD', '2026-07-19T19:00:00Z'],
+    ];
+
+    const insertAll = db.transaction(() => {
+      for (const [extId, stage, num, home, away, dateStr] of realKnockout) {
+        insertKnockout.run(uuidv4(), extId, stage, num, home, away, Math.floor(new Date(dateStr).getTime() / 1000));
+      }
+    });
+    insertAll();
+    console.log('Reseeded knockout matches with real external IDs and dates.');
   }
 }
 
