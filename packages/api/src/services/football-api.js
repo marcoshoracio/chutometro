@@ -90,7 +90,7 @@ const TEAM_CODE = {
   'South Africa': 'RSA', 'Canada': 'CAN', 'Germany': 'GER', 'France': 'FRA',
   'Netherlands': 'NED', 'Morocco': 'MAR', 'Brazil': 'BRA', 'Japan': 'JPN',
   'Ivory Coast': 'CIV', "Côte d'Ivoire": 'CIV', 'Norway': 'NOR', 'Mexico': 'MEX',
-  'United States': 'USA', 'Bosnia and Herzegovina': 'BIH', 'Switzerland': 'SUI',
+  'United States': 'USA', 'Bosnia and Herzegovina': 'BIH', 'Bosnia-Herzegovina': 'BIH', 'Switzerland': 'SUI',
   'Argentina': 'ARG', 'Australia': 'AUS', 'Spain': 'ESP', 'Portugal': 'POR',
   'England': 'ENG', 'Belgium': 'BEL', 'Croatia': 'CRO', 'Uruguay': 'URU',
   'Colombia': 'COL', 'Ecuador': 'ECU', 'Chile': 'CHI', 'Peru': 'PER',

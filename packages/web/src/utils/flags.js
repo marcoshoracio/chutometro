@@ -123,9 +123,25 @@ const FLAGS = {
   'Hungary': '🇭🇺',
   'Slovakia': '🇸🇰',
   'Switzerland': '🇨🇭',
-  'DR Congo': '🇨🇩',
-  'Mali': '🇲🇱',
-  'Senegal': '🇸🇳',
+  'DR Congo': '🇨🇩', 'Mali': '🇲🇱', 'Senegal': '🇸🇳',
+  'Bosnia-Herzegovina': '🇧🇦', 'Ivory Coast': '🇨🇮',
+
+  // FIFA 3-letter codes (used in knockout bracket)
+  'RSA': '🇿🇦', 'CAN': '🇨🇦', 'GER': '🇩🇪', 'FRA': '🇫🇷',
+  'NED': '🇳🇱', 'MAR': '🇲🇦', 'BRA': '🇧🇷', 'JPN': '🇯🇵',
+  'CIV': '🇨🇮', 'NOR': '🇳🇴', 'MEX': '🇲🇽', 'USA': '🇺🇸',
+  'BIH': '🇧🇦', 'SUI': '🇨🇭', 'ARG': '🇦🇷', 'AUS': '🇦🇺',
+  'ESP': '🇪🇸', 'POR': '🇵🇹', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'BEL': '🇧🇪',
+  'CRO': '🇭🇷', 'URU': '🇺🇾', 'COL': '🇨🇴', 'ECU': '🇪🇨',
+  'CHI': '🇨🇱', 'PER': '🇵🇪', 'SEN': '🇸🇳', 'GHA': '🇬🇭',
+  'CMR': '🇨🇲', 'NGA': '🇳🇬', 'EGY': '🇪🇬', 'ALG': '🇩🇿',
+  'TUN': '🇹🇳', 'QAT': '🇶🇦', 'KSA': '🇸🇦', 'IRN': '🇮🇷',
+  'KOR': '🇰🇷', 'TUR': '🇹🇷', 'UKR': '🇺🇦', 'POL': '🇵🇱',
+  'DEN': '🇩🇰', 'SWE': '🇸🇪', 'SRB': '🇷🇸', 'ROU': '🇷🇴',
+  'CZE': '🇨🇿', 'AUT': '🇦🇹', 'NZL': '🇳🇿', 'IDN': '🇮🇩',
+  'VEN': '🇻🇪', 'BOL': '🇧🇴', 'PAR': '🇵🇾', 'CRC': '🇨🇷',
+  'PAN': '🇵🇦', 'HON': '🇭🇳', 'ITA': '🇮🇹', 'GRE': '🇬🇷',
+  'HUN': '🇭🇺', 'SVK': '🇸🇰', 'SVN': '🇸🇮',
 };
 
 /**

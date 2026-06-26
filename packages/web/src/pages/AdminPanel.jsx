@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
+import { getFlag } from '../utils/flags';
 
 const TABS = ['Jogadores', 'Times', 'Resultados', 'Configurações'];
 
@@ -327,57 +328,51 @@ function TeamsTab({ matches, groupId, onRefresh }) {
         {syncMsg && <p className="text-xs text-green-400">{syncMsg}</p>}
       </div>
 
-      <div className="card overflow-hidden">
-        <div className="px-4 py-3 border-b border-navy-border">
-          <h3 className="font-semibold text-sm text-muted">Editar times manualmente</h3>
-        </div>
-        <div className="divide-y divide-navy-border">
-          {knockoutMatches.map((m) => (
-            <div key={m.id} className="px-4 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-muted w-16 shrink-0 leading-tight">
-                  <span className="font-mono font-bold text-white">{m.matchNumber ? `M${m.matchNumber}` : STAGE_LABELS[m.stage]}</span>
-                  <span className="block text-muted/70">
-                    {m.kickoffAt ? new Date(m.kickoffAt * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''}
-                  </span>
-                </span>
-                {editing === m.id ? (
-                  <div className="flex-1 flex items-center gap-2">
-                    <input
-                      className="input text-xs flex-1"
-                      placeholder="Time casa"
-                      value={form.homeTeam}
-                      onChange={(e) => setForm({ ...form, homeTeam: e.target.value })}
-                    />
-                    <span className="text-muted text-xs">×</span>
-                    <input
-                      className="input text-xs flex-1"
-                      placeholder="Time fora"
-                      value={form.awayTeam}
-                      onChange={(e) => setForm({ ...form, awayTeam: e.target.value })}
-                    />
-                    <button onClick={() => handleSave(m.id)} disabled={saving} className="btn-primary text-xs px-2 py-1">✓</button>
-                    <button onClick={() => setEditing(null)} className="text-muted hover:text-white text-xs px-2 py-1">✕</button>
-                  </div>
-                ) : (
-                  <>
-                    <span className={`flex-1 text-sm text-center ${m.homeTeam === 'TBD' ? 'text-muted italic' : ''}`}>
-                      {m.homeTeam}
-                    </span>
-                    <span className="text-muted text-xs">×</span>
-                    <span className={`flex-1 text-sm text-center ${m.awayTeam === 'TBD' ? 'text-muted italic' : ''}`}>
-                      {m.awayTeam}
-                    </span>
-                    <button onClick={() => startEdit(m)} className="text-xs text-pitch-light hover:underline">
-                      editar
-                    </button>
-                  </>
-                )}
-              </div>
+      {KNOCKOUT_STAGES.map((stageKey) => {
+        const stageMatches = knockoutMatches.filter((m) => m.stage === stageKey);
+        if (stageMatches.length === 0) return null;
+        return (
+          <div key={stageKey} className="card overflow-hidden">
+            <div className="px-4 py-2 bg-navy-border/40 border-b border-navy-border">
+              <h3 className="font-semibold text-sm text-pitch-light">{STAGE_LABELS[stageKey]}</h3>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="divide-y divide-navy-border">
+              {stageMatches.map((m) => (
+                <div key={m.id} className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted w-14 shrink-0 leading-tight">
+                      <span className="font-mono font-bold text-white/70">{m.matchNumber ? `M${m.matchNumber}` : ''}</span>
+                      <span className="block text-muted/70">
+                        {m.kickoffAt ? new Date(m.kickoffAt * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''}
+                      </span>
+                    </span>
+                    {editing === m.id ? (
+                      <div className="flex-1 flex items-center gap-2">
+                        <input className="input text-xs flex-1" placeholder="Time casa" value={form.homeTeam} onChange={(e) => setForm({ ...form, homeTeam: e.target.value })} />
+                        <span className="text-muted text-xs">×</span>
+                        <input className="input text-xs flex-1" placeholder="Time fora" value={form.awayTeam} onChange={(e) => setForm({ ...form, awayTeam: e.target.value })} />
+                        <button onClick={() => handleSave(m.id)} disabled={saving} className="btn-primary text-xs px-2 py-1">✓</button>
+                        <button onClick={() => setEditing(null)} className="text-muted hover:text-white text-xs px-2 py-1">✕</button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className={`flex-1 text-sm text-right ${m.homeTeam === 'TBD' ? 'text-muted italic' : 'font-medium'}`}>
+                          {m.homeTeam !== 'TBD' && <span className="mr-1">{getFlag(m.homeTeam)}</span>}{m.homeTeam}
+                        </span>
+                        <span className="text-muted text-xs shrink-0">×</span>
+                        <span className={`flex-1 text-sm ${m.awayTeam === 'TBD' ? 'text-muted italic' : 'font-medium'}`}>
+                          {m.awayTeam !== 'TBD' && <span className="mr-1">{getFlag(m.awayTeam)}</span>}{m.awayTeam}
+                        </span>
+                        <button onClick={() => startEdit(m)} className="text-xs text-pitch-light hover:underline shrink-0">editar</button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
