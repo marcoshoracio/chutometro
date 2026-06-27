@@ -75,8 +75,8 @@ module.exports = function authRoutes(db) {
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail);
 
     // Always return success to avoid user enumeration
-    if (!user || !user.password_hash) {
-      console.log(`[password-reset] no account or no password_hash for email: ${normalizedEmail}`);
+    if (!user) {
+      console.log(`[password-reset] no account for email: ${normalizedEmail}`);
       return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
     }
 
