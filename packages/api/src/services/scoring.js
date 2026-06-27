@@ -48,14 +48,6 @@ function calculateScore(homeGuess, awayGuess, homeResult, awayResult) {
     breakdown.push('Resultado errado (+0)');
   }
 
-  // Bonus: both individual totals correct even if swapped
-  const guessScores = [homeGuess, awayGuess].sort((a, b) => a - b);
-  const actualScores = [homeResult, awayResult].sort((a, b) => a - b);
-  if (!exactScore && guessScores[0] === actualScores[0] && guessScores[1] === actualScores[1]) {
-    bonuses += 2;
-    breakdown.push('Totais individuais corretos (invertidos) (+2)');
-  }
-
   // Bonus: total goals correct
   if (homeGuess + awayGuess === homeResult + awayResult && !exactScore) {
     bonuses += 1;

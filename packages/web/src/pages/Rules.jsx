@@ -33,12 +33,6 @@ const SCORE_OUTCOMES = [
 
 const BONUSES = [
   {
-    icon: '↔️',
-    label: 'Totais individuais corretos (invertidos)',
-    detail: 'Ex: chutou 1–2, deu 2–1 — ambos os placares estão certos, mas trocados.',
-    pts: '+2 pts',
-  },
-  {
     icon: '⚖️',
     label: 'Total de gols correto',
     detail: 'Ex: chutou 1–2 (3 gols), deu 2–1 (3 gols) — soma total igual.',
