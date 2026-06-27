@@ -69,8 +69,6 @@ export default function Leaderboard() {
           <span>Exact score</span><span className="text-gold font-bold">10 pts</span>
           <span>Winner + goal difference</span><span className="text-gold font-bold">6 pts</span>
           <span>Correct winner</span><span className="text-gold font-bold">3 pts</span>
-          <span>Reversed totals</span><span className="text-pitch-light font-bold">+2 bonus</span>
-          <span>Correct total goals</span><span className="text-pitch-light font-bold">+1 bonus</span>
           <span>Streak of 3</span><span className="text-pitch-light font-bold">+1 bonus</span>
         </div>
         <p className="mt-2">Multipliers: Groups ×1 · R32 ×1.5 · R16 ×2 · QF ×3 · SF ×4 · Final ×5</p>
