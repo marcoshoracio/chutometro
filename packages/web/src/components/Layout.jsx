@@ -16,7 +16,6 @@ export default function Layout() {
   const navItems = [
     { to: `/g/${groupId}`, label: 'Home', end: true },
     { to: `/g/${groupId}/fixtures`, label: 'Matches' },
-    { to: `/g/${groupId}/bracket`, label: 'Bracket' },
     { to: `/g/${groupId}/leaderboard`, label: 'Leaderboard' },
   ];
 
