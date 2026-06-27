@@ -56,7 +56,19 @@ module.exports = function preTournamentRoutes(db) {
       .prepare('SELECT * FROM pre_tournament_predictions WHERE user_id = ? AND group_id = ?')
       .get(req.user.userId, groupId);
 
-    res.json({ prediction: pred ? formatPred(pred) : null });
+    // All members' predictions (visible to everyone)
+    const all = db.prepare(`
+      SELECT ptp.*, u.display_name
+      FROM pre_tournament_predictions ptp
+      JOIN users u ON u.id = ptp.user_id
+      WHERE ptp.group_id = ?
+      ORDER BY ptp.points DESC, u.display_name ASC
+    `).all(groupId);
+
+    res.json({
+      prediction: pred ? formatPred(pred) : null,
+      allPredictions: all.map((p) => ({ ...formatPred(p), displayName: p.display_name })),
+    });
   });
 
   function formatPred(p) {

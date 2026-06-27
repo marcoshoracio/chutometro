@@ -17,6 +17,7 @@ export default function PreTournament() {
   const { groupId } = useParams();
   const [form, setForm] = useState({ champion: '', runnerUp: '', topScorer: '' });
   const [existing, setExisting] = useState(null);
+  const [allPredictions, setAllPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -33,6 +34,7 @@ export default function PreTournament() {
             topScorer: d.prediction.topScorer || '',
           });
         }
+        setAllPredictions(d.allPredictions || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -111,6 +113,39 @@ export default function PreTournament() {
           {saving ? 'Salvando...' : existing ? 'Atualizar Palpites' : 'Enviar Palpites'}
         </button>
       </form>
+
+      {allPredictions.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Palpites do Grupo</h2>
+          <div className="card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-navy-border text-xs text-muted uppercase tracking-wider">
+                  <th className="text-left px-4 py-2">Jogador</th>
+                  <th className="text-left px-4 py-2">🏆 Campeão</th>
+                  <th className="text-left px-4 py-2">🥈 Vice</th>
+                  <th className="text-left px-4 py-2">⚽ Artilheiro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-navy-border">
+                {allPredictions.map((p) => (
+                  <tr key={p.userId} className={p.points > 0 ? 'bg-pitch/5' : ''}>
+                    <td className="px-4 py-2 font-medium text-white">
+                      {p.displayName}
+                      {p.points > 0 && (
+                        <span className="ml-1 text-xs text-gold font-bold">+{p.points}pts</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-muted">{p.champion || '—'}</td>
+                    <td className="px-4 py-2 text-muted">{p.runnerUp || '—'}</td>
+                    <td className="px-4 py-2 text-muted">{p.topScorer || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
