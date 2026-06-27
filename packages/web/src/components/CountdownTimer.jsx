@@ -33,11 +33,11 @@ export default function CountdownTimer({ kickoffAt, className = '' }) {
 
   let display;
   if (h > 0) {
-    display = `Fecha em ${h}h ${m}m`;
+    display = `Closes in ${h}h ${m}m`;
   } else if (m > 0) {
-    display = `Fecha em ${m}m ${s}s`;
+    display = `Closes in ${m}m ${s}s`;
   } else {
-    display = `Fecha em ${s}s`;
+    display = `Closes in ${s}s`;
   }
 
   const urgent = timeLeft < 3600;
