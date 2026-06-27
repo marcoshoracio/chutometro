@@ -66,6 +66,20 @@ export default function Join() {
     }
   }
 
+  async function handleForgotPassword(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await api.post('/auth/forgot-password', { email: form.email });
+      setStep('forgot-sent');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleJoinWithCode(code) {
     setLoading(true);
     setError('');
@@ -155,6 +169,11 @@ export default function Join() {
               </button>
             </form>
             <p className="text-center text-xs text-muted">
+              <button onClick={() => { setStep('forgot-password'); setError(''); }} className="text-pitch-light hover:underline">
+                Forgot password?
+              </button>
+            </p>
+            <p className="text-center text-xs text-muted">
               No account?{' '}
               <button onClick={() => { setStep('register'); setError(''); }} className="text-pitch-light hover:underline">
                 Create one
@@ -219,6 +238,49 @@ export default function Join() {
             </p>
             <button onClick={() => { setStep('landing'); setError(''); }} className="text-muted text-xs hover:text-white w-full text-center">
               ← Back
+            </button>
+          </div>
+        )}
+
+        {/* Forgot password */}
+        {step === 'forgot-password' && (
+          <div className="card p-6 space-y-4">
+            <h2 className="font-bold text-lg">Reset Password</h2>
+            <p className="text-muted text-sm">Enter your email and we'll send you a reset link.</p>
+            <form onSubmit={handleForgotPassword} className="space-y-3">
+              <div>
+                <label className="text-xs text-muted block mb-1">Email</label>
+                <input
+                  type="email"
+                  className="input"
+                  placeholder="your@email.com"
+                  value={form.email}
+                  onChange={e => set('email', e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              {error && <p className="text-red-400 text-sm">{error}</p>}
+              <button type="submit" disabled={loading} className="btn-primary w-full">
+                {loading ? 'Sending…' : 'Send Reset Link'}
+              </button>
+            </form>
+            <button onClick={() => { setStep('login'); setError(''); }} className="text-muted text-xs hover:text-white w-full text-center">
+              ← Back to Log In
+            </button>
+          </div>
+        )}
+
+        {/* Forgot password — email sent */}
+        {step === 'forgot-sent' && (
+          <div className="card p-6 space-y-4 text-center">
+            <div className="text-4xl">📧</div>
+            <h2 className="font-bold text-lg">Check your email</h2>
+            <p className="text-muted text-sm">
+              If an account exists for <strong className="text-white">{form.email}</strong>, you'll receive a password reset link shortly. The link expires in 1 hour.
+            </p>
+            <button onClick={() => { setStep('login'); setError(''); }} className="btn-secondary w-full">
+              Back to Log In
             </button>
           </div>
         )}

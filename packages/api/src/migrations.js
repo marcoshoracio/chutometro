@@ -102,6 +102,17 @@ function runMigrations(db) {
     db.exec('ALTER TABLE users ADD COLUMN password_hash TEXT');
   } catch (_) { /* column already exists */ }
 
+  // Password reset tokens table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      token TEXT UNIQUE NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+
   // Seed FIFA WC2026 bracket slot names by kickoff order (match_number may be null on old DBs)
   // Sorted by kickoff_at ascending — matches the official FIFA R32 schedule order
   const r32Slots = [

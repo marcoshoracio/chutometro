@@ -14,6 +14,7 @@ import Layout from './components/Layout';
 import WCGroups from './pages/WCGroups';
 import Bracket from './pages/Bracket';
 import Rules from './pages/Rules';
+import ResetPassword from './pages/ResetPassword';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -42,6 +43,7 @@ export default function App() {
         <Routes>
           <Route path="/join" element={<Join />} />
           <Route path="/auth/verify" element={<AuthVerify />} />
+          <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route
             path="/g/:groupId"
             element={

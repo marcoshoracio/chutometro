@@ -66,6 +66,86 @@ module.exports = function authRoutes(db) {
     res.json({ token, user: { id: user.id, email: user.email, displayName: user.display_name }, groups });
   });
 
+  // POST /api/auth/forgot-password
+  router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail);
+
+    // Always return success to avoid user enumeration
+    if (!user || !user.password_hash) {
+      return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
+    }
+
+    const token = uuidv4();
+    const expiresAt = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+
+    db.prepare(`
+      INSERT INTO password_reset_tokens (id, user_id, token, expires_at, used)
+      VALUES (?, ?, ?, ?, 0)
+    `).run(uuidv4(), user.id, token, expiresAt);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/auth/reset-password?token=${token}`;
+
+    const resend = getResend();
+    if (!resend) {
+      console.log(`\n[password-reset] ${resetLink}\n`);
+      return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
+    }
+
+    try {
+      await resend.emails.send({
+        from: 'Chutômetro <noreply@marcosh.com>',
+        to: normalizedEmail,
+        subject: 'Reset your password — Chutômetro ⚽',
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f1923;padding:32px;border-radius:12px">
+            <h2 style="color:#22c55e;margin-top:0">Chutômetro ⚽</h2>
+            <p style="color:#e2e8f0">Click the link below to reset your password. The link expires in <strong>1 hour</strong>.</p>
+            <a href="${resetLink}" style="display:inline-block;background:#1a7a4a;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+              Reset Password
+            </a>
+            <p style="color:#64748b;font-size:12px;margin-top:24px">If you did not request this, please ignore it.</p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      console.error('[auth] Resend error:', err.message);
+      console.log(`\n[password-reset] ${resetLink}\n`);
+    }
+
+    res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
+  });
+
+  // POST /api/auth/reset-password
+  router.post('/reset-password', async (req, res) => {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token and password are required' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const row = db.prepare('SELECT * FROM password_reset_tokens WHERE token = ?').get(token);
+    if (!row) return res.status(400).json({ error: 'Invalid or expired reset link' });
+    if (row.used) return res.status(400).json({ error: 'This reset link has already been used' });
+
+    const now = Math.floor(Date.now() / 1000);
+    if (row.expires_at < now) return res.status(400).json({ error: 'Reset link has expired' });
+
+    const hash = await bcrypt.hash(password, 10);
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, row.user_id);
+    db.prepare('UPDATE password_reset_tokens SET used = 1 WHERE id = ?').run(row.id);
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id);
+    const jwtToken = signToken(user.id);
+    const groups = db.prepare(
+      'SELECT g.id, g.name FROM groups g JOIN group_members gm ON gm.group_id = g.id WHERE gm.user_id = ? ORDER BY gm.joined_at ASC'
+    ).all(user.id);
+
+    res.json({ token: jwtToken, user: { id: user.id, email: user.email, displayName: user.display_name }, groups });
+  });
+
   function getResend() {
     return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   }
