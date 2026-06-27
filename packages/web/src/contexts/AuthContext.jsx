@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
     }
     try {
       const data = await api.get('/auth/me');
-      setUser(data.user);
+      setUser({ ...data.user, groups: data.groups || [] });
     } catch {
       localStorage.removeItem('chutometro_token');
       setUser(null);

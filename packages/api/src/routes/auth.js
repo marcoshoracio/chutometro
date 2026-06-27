@@ -115,7 +115,10 @@ module.exports = function authRoutes(db) {
   router.get('/me', authenticate, (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
     if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-    res.json({ user: { id: user.id, email: user.email, displayName: user.display_name } });
+    const groups = db.prepare(
+      'SELECT g.id, g.name FROM groups g JOIN group_members gm ON gm.group_id = g.id WHERE gm.user_id = ? ORDER BY gm.joined_at ASC'
+    ).all(user.id);
+    res.json({ user: { id: user.id, email: user.email, displayName: user.display_name }, groups });
   });
 
   return router;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/client';
 
@@ -98,6 +98,11 @@ export default function Join() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // If logged in and already in a group, go straight there
+  if (user && user.groups?.length && !searchParams.get('code')) {
+    return <Navigate to={`/g/${user.groups[0].id}`} replace />;
   }
 
   // If logged in with no code, show dashboard redirect or create group

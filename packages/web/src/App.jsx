@@ -21,6 +21,13 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><Spinner /></div>;
+  if (user?.groups?.length) return <Navigate to={`/g/${user.groups[0].id}`} replace />;
+  return <Navigate to="/join" replace />;
+}
+
 function Spinner() {
   return (
     <div className="w-8 h-8 border-2 border-pitch-light border-t-transparent rounded-full animate-spin" />
@@ -52,8 +59,8 @@ export default function App() {
             <Route path="grupos" element={<WCGroups />} />
           </Route>
           <Route path="/wc-grupos" element={<WCGroups />} />
-          <Route path="/" element={<Navigate to="/join" replace />} />
-          <Route path="*" element={<Navigate to="/join" replace />} />
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
