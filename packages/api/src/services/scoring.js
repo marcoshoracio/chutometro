@@ -3,10 +3,9 @@
 const { v4: uuidv4 } = require('uuid');
 
 const STAGE_MULTIPLIERS = {
-  GROUP_STAGE: 1,
-  ROUND_OF_32: 1.5,
-  ROUND_OF_16: 2,
-  QUARTER_FINALS: 3,
+  ROUND_OF_32: 1,
+  ROUND_OF_16: 1.5,
+  QUARTER_FINALS: 2,
   SEMI_FINALS: 4,
   THIRD_PLACE: 3,
   FINAL: 5,

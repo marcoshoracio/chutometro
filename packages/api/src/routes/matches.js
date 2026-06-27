@@ -16,7 +16,9 @@ module.exports = function matchRoutes(db) {
       .get(groupId, req.user.userId);
     if (!member) return res.status(403).json({ error: 'Você não é membro deste grupo' });
 
-    const matches = db.prepare('SELECT * FROM matches ORDER BY kickoff_at ASC').all();
+    const matches = db.prepare(
+      "SELECT * FROM matches WHERE stage != 'GROUP_STAGE' ORDER BY kickoff_at ASC"
+    ).all();
     const userId = req.user.userId;
     const deadline = 1800; // 30 min before kickoff
 

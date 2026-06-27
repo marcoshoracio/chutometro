@@ -53,13 +53,12 @@ const BONUSES = [
 ];
 
 const MULTIPLIERS = [
-  { stage: 'Grupos',          mult: '×1',   color: 'text-muted' },
-  { stage: 'Oitavas',         mult: '×1.5', color: 'text-white' },
-  { stage: 'Quartas',         mult: '×2',   color: 'text-blue-300' },
-  { stage: 'Semifinais',      mult: '×3',   color: 'text-gold' },
-  { stage: '3º Lugar',        mult: '×3',   color: 'text-gold' },
-  { stage: 'Final 4',         mult: '×4',   color: 'text-orange-400' },
-  { stage: 'Final',           mult: '×5',   color: 'text-pitch-light font-bold' },
+  { stage: 'Oitavas de Final', mult: '×1',   color: 'text-white' },
+  { stage: 'Quartas de Final', mult: '×1.5', color: 'text-blue-300' },
+  { stage: 'Semifinais',       mult: '×2',   color: 'text-gold' },
+  { stage: '3º Lugar',         mult: '×3',   color: 'text-orange-400' },
+  { stage: 'Final 4',          mult: '×4',   color: 'text-orange-400' },
+  { stage: 'Final',            mult: '×5',   color: 'text-pitch-light font-bold' },
 ];
 
 const PRE_TOURNAMENT = [
@@ -127,6 +126,7 @@ export default function Rules() {
         </div>
         <p className="text-xs text-muted mt-2">
           Exemplo: placar exato na Final = 10 × 5 = <span className="text-gold font-bold">50 pts</span>.
+          Placar exato nas Oitavas = 10 × 1 = <span className="text-gold font-bold">10 pts</span>.
         </p>
       </Section>
 
