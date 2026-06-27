@@ -33,18 +33,23 @@ module.exports = function leaderboardRoutes(db) {
       todayFilter = `AND m.kickoff_at >= ${todayStart} AND m.kickoff_at < ${todayEnd}`;
     }
 
+    // Include pre-tournament points only on full leaderboard (no stage/day filter)
+    const includePre = !stage || stage === 'ALL';
+
     const rows = db.prepare(`
       SELECT
         u.id as user_id,
         u.display_name,
-        COALESCE(SUM(s.final_points), 0) as total_points,
+        COALESCE(SUM(s.final_points), 0) ${includePre ? '+ COALESCE(MAX(ptp.points), 0)' : ''} as total_points,
         COUNT(CASE WHEN s.base_points = 10 THEN 1 END) as exact_scores,
         COUNT(CASE WHEN s.base_points >= 3 THEN 1 END) as correct_results,
-        COUNT(s.id) as predictions_scored
+        COUNT(s.id) as predictions_scored,
+        ${includePre ? 'COALESCE(MAX(ptp.points), 0)' : '0'} as pre_tournament_points
       FROM group_members gm
       JOIN users u ON u.id = gm.user_id
       LEFT JOIN scores s ON s.user_id = u.id AND s.group_id = gm.group_id
       LEFT JOIN matches m ON m.id = s.match_id
+      ${includePre ? 'LEFT JOIN pre_tournament_predictions ptp ON ptp.user_id = u.id AND ptp.group_id = gm.group_id' : ''}
       WHERE gm.group_id = ? ${stageFilter} ${todayFilter}
       GROUP BY u.id, u.display_name
       ORDER BY total_points DESC, exact_scores DESC, u.display_name ASC
@@ -58,6 +63,7 @@ module.exports = function leaderboardRoutes(db) {
       exactScores: row.exact_scores,
       correctResults: row.correct_results,
       predictionsScored: row.predictions_scored,
+      preTournamentPoints: row.pre_tournament_points,
       isCurrentUser: row.user_id === req.user.userId,
     }));
 

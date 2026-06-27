@@ -92,6 +92,11 @@ function runMigrations(db) {
     db.exec('ALTER TABLE matches ADD COLUMN is_manual_override INTEGER NOT NULL DEFAULT 0');
   } catch (_) { /* column already exists */ }
 
+  // Add points column to pre_tournament_predictions if it doesn't exist
+  try {
+    db.exec('ALTER TABLE pre_tournament_predictions ADD COLUMN points INTEGER NOT NULL DEFAULT 0');
+  } catch (_) { /* column already exists */ }
+
   // Seed FIFA WC2026 bracket slot names by kickoff order (match_number may be null on old DBs)
   // Sorted by kickoff_at ascending — matches the official FIFA R32 schedule order
   const r32Slots = [

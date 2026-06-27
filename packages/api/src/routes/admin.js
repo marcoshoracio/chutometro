@@ -131,6 +131,52 @@ module.exports = function adminRoutes(db) {
     res.json({ message: 'Times atualizados' });
   });
 
+  // POST /api/groups/:groupId/admin/pre-tournament-results — set correct answers and score predictions
+  router.post('/pre-tournament-results', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { groupId } = req.params;
+    const { champion, runnerUp, topScorer } = req.body;
+
+    // Store results in group settings
+    const group = req.group;
+    const settings = JSON.parse(group.settings || '{}');
+    settings.pre_tournament_results = {
+      champion: champion || null,
+      runnerUp: runnerUp || null,
+      topScorer: topScorer || null,
+    };
+    db.prepare('UPDATE groups SET settings = ? WHERE id = ?').run(JSON.stringify(settings), groupId);
+
+    // Recalculate points for all predictions in this group
+    const preds = db.prepare(
+      'SELECT * FROM pre_tournament_predictions WHERE group_id = ?'
+    ).all(groupId);
+
+    const updatePoints = db.prepare(
+      'UPDATE pre_tournament_predictions SET points = ? WHERE user_id = ? AND group_id = ?'
+    );
+
+    const recalc = db.transaction(() => {
+      for (const pred of preds) {
+        let pts = 0;
+        if (champion && pred.champion && pred.champion.toLowerCase() === champion.toLowerCase()) pts += 10;
+        if (runnerUp && pred.runner_up && pred.runner_up.toLowerCase() === runnerUp.toLowerCase()) pts += 5;
+        if (topScorer && pred.top_scorer && pred.top_scorer.trim().toLowerCase() === topScorer.trim().toLowerCase()) pts += 5;
+        updatePoints.run(pts, pred.user_id, groupId);
+      }
+    });
+    recalc();
+
+    res.json({ message: 'Resultados salvos e pontos calculados', results: settings.pre_tournament_results });
+  });
+
+  // GET /api/groups/:groupId/admin/pre-tournament-results
+  router.get('/pre-tournament-results', authenticate, requireGroupAdmin(db), (req, res) => {
+    const { groupId } = req.params;
+    const group = req.group;
+    const settings = JSON.parse(group.settings || '{}');
+    res.json({ results: settings.pre_tournament_results || null });
+  });
+
   // DELETE /api/groups/:groupId/members/:userId
   router.delete('/members/:userId', authenticate, requireGroupAdmin(db), (req, res) => {
     const { groupId } = req.params;

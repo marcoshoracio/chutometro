@@ -4,7 +4,7 @@ import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { getFlag } from '../utils/flags';
 
-const TABS = ['Jogadores', 'Times', 'Resultados', 'Configurações'];
+const TABS = ['Jogadores', 'Times', 'Resultados', 'Pré-Torneio', 'Configurações'];
 
 export default function AdminPanel() {
   const { groupId } = useParams();
@@ -95,6 +95,9 @@ export default function AdminPanel() {
       )}
       {tab === 'Resultados' && (
         <ResultsTab matches={data.matches} groupId={groupId} onRefresh={load} />
+      )}
+      {tab === 'Pré-Torneio' && (
+        <PreTournamentResultsTab groupId={groupId} />
       )}
       {tab === 'Configurações' && (
         <SettingsTab settings={data.group.settings} groupId={groupId} onRefresh={load} />
@@ -448,6 +451,97 @@ function SettingsTab({ settings, groupId, onRefresh }) {
           {saving ? 'Salvando...' : 'Salvar Configurações'}
         </button>
       </div>
+    </div>
+  );
+}
+
+function PreTournamentResultsTab({ groupId }) {
+  const [form, setForm] = useState({ champion: '', runnerUp: '', topScorer: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  useEffect(() => {
+    api.get(`/groups/${groupId}/admin/pre-tournament-results`)
+      .then((d) => {
+        if (d.results) {
+          setForm({
+            champion: d.results.champion || '',
+            runnerUp: d.results.runnerUp || '',
+            topScorer: d.results.topScorer || '',
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [groupId]);
+
+  async function handleSave(e) {
+    e.preventDefault();
+    setSaving(true);
+    setMsg('');
+    try {
+      await api.post(`/groups/${groupId}/admin/pre-tournament-results`, form);
+      setMsg('Resultados salvos e pontos calculados!');
+    } catch (err) {
+      setMsg('Erro: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <Spinner />;
+
+  return (
+    <div className="space-y-4">
+      <div className="card p-4 space-y-1">
+        <h3 className="font-semibold">Resultados Pré-Torneio</h3>
+        <p className="text-xs text-muted">
+          Defina os resultados reais após o torneio terminar. Os pontos serão calculados automaticamente:
+          Campeão correto <span className="text-gold font-bold">+10 pts</span>,
+          Vice correto <span className="text-gold font-bold">+5 pts</span>,
+          Artilheiro correto <span className="text-gold font-bold">+5 pts</span>.
+        </p>
+      </div>
+
+      <form onSubmit={handleSave} className="card p-4 space-y-4">
+        <div>
+          <label className="text-xs text-muted block mb-1">🏆 Campeão</label>
+          <input
+            type="text"
+            className="input"
+            placeholder="Nome do país campeão"
+            value={form.champion}
+            onChange={(e) => setForm({ ...form, champion: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted block mb-1">🥈 Vice-Campeão</label>
+          <input
+            type="text"
+            className="input"
+            placeholder="Nome do país vice-campeão"
+            value={form.runnerUp}
+            onChange={(e) => setForm({ ...form, runnerUp: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted block mb-1">⚽ Artilheiro</label>
+          <input
+            type="text"
+            className="input"
+            placeholder="Nome do artilheiro"
+            value={form.topScorer}
+            onChange={(e) => setForm({ ...form, topScorer: e.target.value })}
+          />
+        </div>
+        {msg && (
+          <p className={`text-sm ${msg.startsWith('Erro') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
+        )}
+        <button type="submit" disabled={saving} className="btn-primary w-full">
+          {saving ? 'Salvando...' : 'Salvar e Calcular Pontos'}
+        </button>
+      </form>
     </div>
   );
 }
