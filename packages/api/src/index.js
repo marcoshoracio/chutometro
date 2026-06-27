@@ -48,7 +48,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // TEMPORARY reset endpoint — remove after use
-app.post('/api/reset-all-data', (req, res) => {
+app.get('/api/reset-all-data', (req, res) => {
   if (req.query.secret !== 'chutometro-reset-2026') {
     return res.status(403).json({ error: 'Forbidden' });
   }
