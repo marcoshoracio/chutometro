@@ -99,7 +99,7 @@ module.exports = function authRoutes(db) {
       return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
     }
 
-    const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+    const fromAddress = process.env.EMAIL_FROM || 'noreply@marcosh.com';
     try {
       await resend.emails.send({
         from: `Chutômetro <${fromAddress}>`,
@@ -191,7 +191,7 @@ module.exports = function authRoutes(db) {
     console.log(`[auth] Sending email to ${normalizedEmail} via Resend`);
     try {
       await resend.emails.send({
-        from: `Chutômetro <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
+        from: `Chutômetro <${process.env.EMAIL_FROM || 'noreply@marcosh.com'}>`,
         to: normalizedEmail,
         subject: 'Your access link — Chutômetro ⚽',
         html: `
