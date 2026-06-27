@@ -33,12 +33,6 @@ const SCORE_OUTCOMES = [
 
 const BONUSES = [
   {
-    icon: '⚖️',
-    label: 'Total de gols correto',
-    detail: 'Ex: chutou 1–2 (3 gols), deu 2–1 (3 gols) — soma total igual.',
-    pts: '+1 pt',
-  },
-  {
     icon: '🔥',
     label: 'Sequência (streak)',
     detail: 'A cada 3 palpites corretos consecutivos, +1 pt de bônus extra.',

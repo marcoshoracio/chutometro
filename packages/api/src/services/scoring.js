@@ -48,12 +48,6 @@ function calculateScore(homeGuess, awayGuess, homeResult, awayResult) {
     breakdown.push('Resultado errado (+0)');
   }
 
-  // Bonus: total goals correct
-  if (homeGuess + awayGuess === homeResult + awayResult && !exactScore) {
-    bonuses += 1;
-    breakdown.push('Total de gols correto (+1)');
-  }
-
   return { base, bonuses, breakdown };
 }
 
