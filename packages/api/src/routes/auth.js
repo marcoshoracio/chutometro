@@ -90,15 +90,18 @@ module.exports = function authRoutes(db) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const resetLink = `${frontendUrl}/auth/reset-password?token=${token}`;
 
+    // Always log the link so it's accessible from Railway logs as a fallback
+    console.log(`\n[password-reset] token=${token} link=${resetLink}\n`);
+
     const resend = getResend();
     if (!resend) {
-      console.log(`\n[password-reset] ${resetLink}\n`);
       return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
     }
 
+    const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
     try {
       await resend.emails.send({
-        from: 'Chutômetro <noreply@marcosh.com>',
+        from: `Chutômetro <${fromAddress}>`,
         to: normalizedEmail,
         subject: 'Reset your password — Chutômetro ⚽',
         html: `
@@ -112,9 +115,9 @@ module.exports = function authRoutes(db) {
           </div>
         `,
       });
+      console.log(`[auth] Password reset email sent to ${normalizedEmail}`);
     } catch (err) {
-      console.error('[auth] Resend error:', err.message);
-      console.log(`\n[password-reset] ${resetLink}\n`);
+      console.error('[auth] Resend error sending reset email:', err.message);
     }
 
     res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
@@ -187,7 +190,7 @@ module.exports = function authRoutes(db) {
     console.log(`[auth] Sending email to ${normalizedEmail} via Resend`);
     try {
       await resend.emails.send({
-        from: 'Chutômetro <noreply@marcosh.com>',
+        from: `Chutômetro <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
         to: normalizedEmail,
         subject: 'Your access link — Chutômetro ⚽',
         html: `
