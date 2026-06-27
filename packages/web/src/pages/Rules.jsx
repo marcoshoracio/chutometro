@@ -2,29 +2,29 @@ import React from 'react';
 
 const SCORE_OUTCOMES = [
   {
-    label: 'Placar exato',
-    example: 'Chutou 2–1, deu 2–1',
+    label: 'Exact score',
+    example: 'Predicted 2–1, result 2–1',
     pts: 10,
     color: 'border-pitch/60 bg-pitch/10',
     badge: 'bg-pitch/20 text-pitch-light',
   },
   {
-    label: 'Vencedor + saldo correto',
-    example: 'Chutou 3–1, deu 2–0',
+    label: 'Correct winner + goal difference',
+    example: 'Predicted 3–1, result 2–0',
     pts: 6,
     color: 'border-blue-500/40 bg-blue-500/5',
     badge: 'bg-blue-500/20 text-blue-300',
   },
   {
-    label: 'Vencedor correto',
-    example: 'Chutou 1–0, deu 3–1',
+    label: 'Correct winner',
+    example: 'Predicted 1–0, result 3–1',
     pts: 3,
     color: 'border-navy-border bg-navy-card',
     badge: 'bg-navy-border text-muted',
   },
   {
-    label: 'Resultado errado',
-    example: 'Chutou 0–1, deu 1–0',
+    label: 'Wrong result',
+    example: 'Predicted 0–1, result 1–0',
     pts: 0,
     color: 'border-navy-border/50 bg-navy-card/30',
     badge: 'bg-navy-border/50 text-muted/60',
@@ -34,53 +34,53 @@ const SCORE_OUTCOMES = [
 const BONUSES = [
   {
     icon: '🔥',
-    label: 'Sequência (streak)',
-    detail: 'A cada 3 palpites corretos consecutivos, +1 pt de bônus extra.',
+    label: 'Streak',
+    detail: 'Every 3 consecutive correct predictions, +1 extra bonus point.',
     pts: '+1 pt',
   },
 ];
 
 const MULTIPLIERS = [
-  { stage: 'Oitavas de Final', mult: '×1',   color: 'text-white' },
-  { stage: 'Quartas de Final', mult: '×1.5', color: 'text-blue-300' },
-  { stage: 'Semifinais',       mult: '×2',   color: 'text-gold' },
-  { stage: '3º Lugar',         mult: '×3',   color: 'text-orange-400' },
-  { stage: 'Final 4',          mult: '×4',   color: 'text-orange-400' },
-  { stage: 'Final',            mult: '×5',   color: 'text-pitch-light font-bold' },
+  { stage: 'Round of 32',  mult: '×1',   color: 'text-white' },
+  { stage: 'Round of 16',  mult: '×1.5', color: 'text-blue-300' },
+  { stage: 'Quarterfinals', mult: '×2',  color: 'text-gold' },
+  { stage: '3rd Place',    mult: '×3',   color: 'text-orange-400' },
+  { stage: 'Semifinals',   mult: '×4',   color: 'text-orange-400' },
+  { stage: 'Final',        mult: '×5',   color: 'text-pitch-light font-bold' },
 ];
 
 const PRE_TOURNAMENT = [
-  { label: 'Campeão correto',      pts: '+10 pts', icon: '🏆' },
-  { label: 'Vice-campeão correto', pts: '+5 pts',  icon: '🥈' },
-  { label: 'Artilheiro correto',   pts: '+5 pts',  icon: '⚽' },
+  { label: 'Correct champion',   pts: '+10 pts', icon: '🏆' },
+  { label: 'Correct runner-up',  pts: '+5 pts',  icon: '🥈' },
+  { label: 'Correct top scorer', pts: '+5 pts',  icon: '⚽' },
 ];
 
 export default function Rules() {
   return (
     <div className="space-y-8 max-w-2xl mx-auto pb-4">
       <div>
-        <h1 className="font-bold text-xl">Regras do Bolão</h1>
+        <h1 className="font-bold text-xl">Bolão Rules</h1>
         <p className="text-muted text-sm mt-1">
-          Como funciona a pontuação e as regras gerais do Chutômetro.
+          How scoring works and the general rules of Chutômetro.
         </p>
       </div>
 
       {/* Deadline */}
-      <Section title="Prazo para palpites">
+      <Section title="Prediction deadline">
         <div className="card p-4 flex gap-3 items-start">
           <span className="text-2xl">⏱️</span>
           <div>
-            <p className="font-medium text-sm text-white">30 minutos antes do apito inicial</p>
+            <p className="font-medium text-sm text-white">30 minutes before kickoff</p>
             <p className="text-xs text-muted mt-0.5">
-              Após esse prazo, o palpite fica bloqueado e não pode mais ser enviado ou alterado.
-              Os palpites dos outros jogadores ficam visíveis a partir desse momento.
+              After this deadline, the prediction is locked and can no longer be submitted or changed.
+              Other players' predictions become visible from that point on.
             </p>
           </div>
         </div>
       </Section>
 
       {/* Base scoring */}
-      <Section title="Pontuação base">
+      <Section title="Base scoring">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {SCORE_OUTCOMES.map((o) => (
             <div key={o.label} className={`rounded-xl border p-4 ${o.color}`}>
@@ -97,10 +97,10 @@ export default function Rules() {
       </Section>
 
       {/* Multipliers */}
-      <Section title="Multiplicadores por fase">
+      <Section title="Stage multipliers">
         <p className="text-xs text-muted mb-3">
-          A pontuação final é <strong className="text-white">(base + bônus) × multiplicador</strong>.
-          Quanto mais avançada a fase, mais valem os acertos.
+          The final score is <strong className="text-white">(base + bonus) × multiplier</strong>.
+          The further the stage, the more your correct predictions are worth.
         </p>
         <div className="card overflow-hidden">
           <div className="divide-y divide-navy-border">
@@ -113,13 +113,13 @@ export default function Rules() {
           </div>
         </div>
         <p className="text-xs text-muted mt-2">
-          Exemplo: placar exato na Final = 10 × 5 = <span className="text-gold font-bold">50 pts</span>.
-          Placar exato nas Oitavas = 10 × 1 = <span className="text-gold font-bold">10 pts</span>.
+          Example: exact score in the Final = 10 × 5 = <span className="text-gold font-bold">50 pts</span>.
+          Exact score in the Round of 32 = 10 × 1 = <span className="text-gold font-bold">10 pts</span>.
         </p>
       </Section>
 
       {/* Bonuses */}
-      <Section title="Bônus">
+      <Section title="Bonuses">
         <div className="space-y-2">
           {BONUSES.map((b) => (
             <div key={b.label} className="card p-4 flex gap-3 items-start">
@@ -135,15 +135,15 @@ export default function Rules() {
           ))}
         </div>
         <p className="text-xs text-muted mt-2">
-          Bônus são somados à base <em>antes</em> de aplicar o multiplicador de fase.
+          Bonuses are added to the base <em>before</em> applying the stage multiplier.
         </p>
       </Section>
 
       {/* Pre-tournament */}
-      <Section title="Palpites pré-torneio">
+      <Section title="Pre-tournament predictions">
         <p className="text-xs text-muted mb-3">
-          Antes do torneio começar, cada jogador pode prever o campeão, o vice e o artilheiro.
-          Os pontos são somados ao total geral da classificação.
+          Before the tournament starts, each player can predict the champion, runner-up and top scorer.
+          Points are added to the overall leaderboard total.
         </p>
         <div className="card overflow-hidden">
           <div className="divide-y divide-navy-border">
@@ -159,12 +159,12 @@ export default function Rules() {
       </Section>
 
       {/* Tiebreaker */}
-      <Section title="Critérios de desempate">
+      <Section title="Tiebreaker criteria">
         <div className="card p-4 space-y-2">
           {[
-            'Maior número de placares exatos',
-            'Maior número de resultados corretos (vencedor acertado)',
-            'Ordem alfabética pelo nome',
+            'Most exact scores',
+            'Most correct results (correct winner)',
+            'Alphabetical order by name',
           ].map((rule, i) => (
             <div key={i} className="flex gap-3 items-start">
               <span className="font-mono text-xs text-muted/60 pt-0.5 w-4 shrink-0 tabular-nums">{i + 1}.</span>

@@ -14,10 +14,10 @@ export default function Layout() {
   }
 
   const navItems = [
-    { to: `/g/${groupId}`, label: 'Início', end: true },
-    { to: `/g/${groupId}/fixtures`, label: 'Jogos' },
-    { to: `/g/${groupId}/bracket`, label: 'Chave' },
-    { to: `/g/${groupId}/leaderboard`, label: 'Classificação' },
+    { to: `/g/${groupId}`, label: 'Home', end: true },
+    { to: `/g/${groupId}/fixtures`, label: 'Matches' },
+    { to: `/g/${groupId}/bracket`, label: 'Bracket' },
+    { to: `/g/${groupId}/leaderboard`, label: 'Leaderboard' },
   ];
 
   return (
@@ -99,7 +99,7 @@ export default function Layout() {
               onClick={() => setMenuOpen(false)}
               className="block px-3 py-2 rounded-lg text-sm text-muted hover:text-white transition-colors"
             >
-              Pré-Torneio
+              Pre-Tournament
             </NavLink>
             <NavLink
               to={`/g/${groupId}/regras`}
@@ -110,14 +110,14 @@ export default function Layout() {
                 }`
               }
             >
-              Regras
+              Rules
             </NavLink>
             <hr className="border-navy-border" />
             <button
               onClick={handleLogout}
               className="block w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-navy-border transition-colors"
             >
-              Sair
+              Log out
             </button>
           </div>
         )}
@@ -136,10 +136,10 @@ export default function Layout() {
               }`
             }
           >
-            {item.label === 'Início' && <span className="text-lg mb-0.5">🏠</span>}
-            {item.label === 'Jogos' && <span className="text-lg mb-0.5">📅</span>}
-            {item.label === 'Classificação' && <span className="text-lg mb-0.5">🏆</span>}
-            {item.label === 'Chave' && <span className="text-lg mb-0.5">🏟️</span>}
+            {item.label === 'Home' && <span className="text-lg mb-0.5">🏠</span>}
+            {item.label === 'Matches' && <span className="text-lg mb-0.5">📅</span>}
+            {item.label === 'Leaderboard' && <span className="text-lg mb-0.5">🏆</span>}
+            {item.label === 'Bracket' && <span className="text-lg mb-0.5">🏟️</span>}
             {item.label}
           </NavLink>
         ))}

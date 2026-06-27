@@ -4,11 +4,11 @@ import api from '../api/client';
 import { getFlag } from '../utils/flags';
 
 const ROUNDS = [
-  { key: 'ROUND_OF_32',    label: 'Oitavas de Final',  cols: 2 },
-  { key: 'ROUND_OF_16',    label: 'Quartas de Final',  cols: 2 },
-  { key: 'QUARTER_FINALS', label: 'Semifinais',        cols: 2 },
-  { key: 'SEMI_FINALS',    label: 'Final 4',           cols: 2 },
-  { key: 'FINAL',          label: 'Final',             cols: 1 },
+  { key: 'ROUND_OF_32',    label: 'Round of 32',  cols: 2 },
+  { key: 'ROUND_OF_16',    label: 'Round of 16',  cols: 2 },
+  { key: 'QUARTER_FINALS', label: 'Quarterfinals', cols: 2 },
+  { key: 'SEMI_FINALS',    label: 'Semifinals',    cols: 2 },
+  { key: 'FINAL',          label: 'Final',         cols: 1 },
 ];
 
 function fmtDate(kickoffAt) {
@@ -92,16 +92,16 @@ function MatchCard({ match, groupId }) {
       {/* Footer: prediction or cta */}
       {isLive && (
         <div className="mt-2 text-[10px] text-gold font-semibold uppercase tracking-wider">
-          Ao vivo
+          Live
         </div>
       )}
       {!isLive && !isFinished && hasPrediction && (
         <div className="mt-2 text-[10px] text-pitch-light/70">
-          Palpite: {match.prediction.home_score}–{match.prediction.away_score}
+          Prediction: {match.prediction.home_score}–{match.prediction.away_score}
         </div>
       )}
       {!isLive && !isFinished && !hasPrediction && !match.locked && (
-        <div className="mt-2 text-[10px] text-gold/70">+ chute</div>
+        <div className="mt-2 text-[10px] text-gold/70">+ predict</div>
       )}
       {isFinished && match.score && (
         <div className="mt-2 text-[10px] text-pitch-light font-bold">
@@ -144,9 +144,9 @@ export default function Bracket() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-xl">Chaveamento</h1>
+        <h1 className="font-bold text-xl">Bracket</h1>
         <Link to={`/g/${groupId}/fixtures`} className="text-pitch-light text-sm hover:underline">
-          Ver lista
+          See list
         </Link>
       </div>
 
@@ -161,7 +161,7 @@ export default function Bracket() {
                 {round.label}
               </h2>
               <div className="flex-1 border-t border-navy-border" />
-              <span className="text-xs text-muted">{roundMatches.length} jogos</span>
+              <span className="text-xs text-muted">{roundMatches.length} matches</span>
             </div>
 
             <div
@@ -181,7 +181,7 @@ export default function Bracket() {
         <section>
           <div className="flex items-center gap-3 mb-3">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-              3º Lugar
+              3rd Place
             </h2>
             <div className="flex-1 border-t border-navy-border" />
           </div>

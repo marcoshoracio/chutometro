@@ -4,12 +4,12 @@ import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { getFlag } from '../utils/flags';
 
-const TABS = ['Jogadores', 'Times', 'Resultados', 'Pré-Torneio', 'Configurações'];
+const TABS = ['Players', 'Teams', 'Results', 'Pre-Tournament', 'Settings'];
 
 export default function AdminPanel() {
   const { groupId } = useParams();
   const { user } = useAuth();
-  const [tab, setTab] = useState('Jogadores');
+  const [tab, setTab] = useState('Players');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -29,7 +29,7 @@ export default function AdminPanel() {
     <div className="card p-6 text-center">
       <p className="text-red-400">{error}</p>
       {error.includes('administrador') && (
-        <p className="text-muted text-sm mt-2">Apenas o administrador do grupo pode acessar este painel.</p>
+        <p className="text-muted text-sm mt-2">Only the group administrator can access this panel.</p>
       )}
     </div>
   );
@@ -39,13 +39,13 @@ export default function AdminPanel() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-xl">Painel Admin</h1>
+        <h1 className="font-bold text-xl">Admin Panel</h1>
         <span className="badge bg-pitch/20 text-pitch-light text-xs">{data.group.name}</span>
       </div>
 
       {/* Invite URL */}
       <div className="card p-4 space-y-2">
-        <p className="text-xs text-muted font-medium">Link de convite</p>
+        <p className="text-xs text-muted font-medium">Invite link</p>
         <div className="flex gap-2 items-center">
           <input
             readOnly
@@ -57,17 +57,17 @@ export default function AdminPanel() {
             onClick={() => navigator.clipboard.writeText(inviteUrl)}
             className="btn-secondary text-xs whitespace-nowrap"
           >
-            Copiar
+            Copy
           </button>
           <button
             onClick={() => api.post(`/groups/${groupId}/admin/invite`).then(load)}
             className="btn-secondary text-xs whitespace-nowrap"
-            title="Gerar novo código"
+            title="Generate new code"
           >
             ↺
           </button>
         </div>
-        <p className="text-xs text-muted">Código: <span className="font-mono text-white font-bold tracking-widest">{data.group.code}</span></p>
+        <p className="text-xs text-muted">Code: <span className="font-mono text-white font-bold tracking-widest">{data.group.code}</span></p>
       </div>
 
       {/* Tabs */}
@@ -87,19 +87,19 @@ export default function AdminPanel() {
         ))}
       </div>
 
-      {tab === 'Jogadores' && (
+      {tab === 'Players' && (
         <MembersTab members={data.members} groupId={groupId} adminId={data.group.adminId} currentUserId={user?.id} onRefresh={load} />
       )}
-      {tab === 'Times' && (
+      {tab === 'Teams' && (
         <TeamsTab matches={data.matches} groupId={groupId} onRefresh={load} />
       )}
-      {tab === 'Resultados' && (
+      {tab === 'Results' && (
         <ResultsTab matches={data.matches} groupId={groupId} onRefresh={load} />
       )}
-      {tab === 'Pré-Torneio' && (
+      {tab === 'Pre-Tournament' && (
         <PreTournamentResultsTab groupId={groupId} />
       )}
-      {tab === 'Configurações' && (
+      {tab === 'Settings' && (
         <SettingsTab settings={data.group.settings} groupId={groupId} onRefresh={load} />
       )}
     </div>
@@ -110,7 +110,7 @@ function MembersTab({ members, groupId, adminId, currentUserId, onRefresh }) {
   const [removing, setRemoving] = useState(null);
 
   async function handleRemove(userId) {
-    if (!confirm('Remover este jogador do grupo?')) return;
+    if (!confirm('Remove this player from the group?')) return;
     setRemoving(userId);
     try {
       await api.delete(`/groups/${groupId}/admin/members/${userId}`);
@@ -141,7 +141,7 @@ function MembersTab({ members, groupId, adminId, currentUserId, onRefresh }) {
                 disabled={removing === m.id}
                 className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
               >
-                {removing === m.id ? '...' : 'Remover'}
+                {removing === m.id ? '...' : 'Remove'}
               </button>
             )}
           </div>
@@ -170,11 +170,11 @@ function ResultsTab({ matches, groupId, onRefresh }) {
         homeScore: parseInt(form.homeScore, 10),
         awayScore: parseInt(form.awayScore, 10),
       });
-      setMsg('Resultado registrado!');
+      setMsg('Result recorded!');
       setForm({ matchId: '', homeScore: '', awayScore: '' });
       onRefresh();
     } catch (err) {
-      setMsg('Erro: ' + err.message);
+      setMsg('Error: ' + err.message);
     } finally {
       setSubmitting(false);
     }
@@ -185,17 +185,17 @@ function ResultsTab({ matches, groupId, onRefresh }) {
   return (
     <div className="space-y-4">
       <div className="card p-4 space-y-4">
-        <h3 className="font-semibold">Registrar Resultado</h3>
+        <h3 className="font-semibold">Record Result</h3>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs text-muted block mb-1">Jogo</label>
+            <label className="text-xs text-muted block mb-1">Match</label>
             <select
               className="input"
               value={form.matchId}
               onChange={(e) => setForm({ ...form, matchId: e.target.value })}
               required
             >
-              <option value="">Selecionar jogo...</option>
+              <option value="">Select match...</option>
               {pendingMatches.map((m) => (
                 <option key={m.id} value={m.id}>
                   #{m.matchNumber} {m.homeTeam} × {m.awayTeam}
@@ -235,11 +235,11 @@ function ResultsTab({ matches, groupId, onRefresh }) {
           )}
 
           {msg && (
-            <p className={msg.startsWith('Erro') ? 'text-red-400 text-sm' : 'text-green-400 text-sm'}>{msg}</p>
+            <p className={msg.startsWith('Error') ? 'text-red-400 text-sm' : 'text-green-400 text-sm'}>{msg}</p>
           )}
 
           <button type="submit" disabled={submitting} className="btn-primary w-full">
-            {submitting ? 'Salvando...' : 'Confirmar Resultado'}
+            {submitting ? 'Saving...' : 'Confirm Result'}
           </button>
         </form>
       </div>
@@ -247,7 +247,7 @@ function ResultsTab({ matches, groupId, onRefresh }) {
       {finishedMatches.length > 0 && (
         <div className="card overflow-hidden">
           <div className="px-4 py-3 border-b border-navy-border">
-            <h3 className="font-semibold text-sm text-muted">Últimos Resultados</h3>
+            <h3 className="font-semibold text-sm text-muted">Recent Results</h3>
           </div>
           <div className="divide-y divide-navy-border">
             {finishedMatches.map((m) => (
@@ -266,8 +266,8 @@ function ResultsTab({ matches, groupId, onRefresh }) {
 
 const KNOCKOUT_STAGES = ['ROUND_OF_32', 'ROUND_OF_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'THIRD_PLACE', 'FINAL'];
 const STAGE_LABELS = {
-  ROUND_OF_32: 'Oitavas', ROUND_OF_16: 'Quartas', QUARTER_FINALS: 'Semi',
-  SEMI_FINALS: 'Final 4', THIRD_PLACE: '3º', FINAL: 'Final',
+  ROUND_OF_32: 'R32', ROUND_OF_16: 'R16', QUARTER_FINALS: 'QF',
+  SEMI_FINALS: 'SF', THIRD_PLACE: '3rd', FINAL: 'Final',
 };
 
 function TeamsTab({ matches, groupId, onRefresh }) {
@@ -286,10 +286,10 @@ function TeamsTab({ matches, groupId, onRefresh }) {
     setSyncMsg('');
     try {
       await api.post(`/groups/${groupId}/admin/sync`);
-      setSyncMsg('Sincronizado! Recarregando...');
+      setSyncMsg('Synced! Reloading...');
       setTimeout(() => { onRefresh(); setSyncMsg(''); }, 1000);
     } catch (err) {
-      setSyncMsg('Erro: ' + err.message);
+      setSyncMsg('Error: ' + err.message);
     } finally {
       setSyncing(false);
     }
@@ -321,11 +321,11 @@ function TeamsTab({ matches, groupId, onRefresh }) {
       <div className="card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-sm">Sincronizar da API</h3>
-            <p className="text-xs text-muted">Puxa nomes de times confirmados do football-data.org</p>
+            <h3 className="font-semibold text-sm">Sync from API</h3>
+            <p className="text-xs text-muted">Pulls confirmed team names from football-data.org</p>
           </div>
           <button onClick={handleSync} disabled={syncing} className="btn-primary text-sm">
-            {syncing ? '...' : '↻ Sincronizar'}
+            {syncing ? '...' : '↻ Sync'}
           </button>
         </div>
         {syncMsg && <p className="text-xs text-green-400">{syncMsg}</p>}
@@ -351,9 +351,9 @@ function TeamsTab({ matches, groupId, onRefresh }) {
                     </span>
                     {editing === m.id ? (
                       <div className="flex-1 flex items-center gap-2">
-                        <input className="input text-xs flex-1" placeholder="Time casa" value={form.homeTeam} onChange={(e) => setForm({ ...form, homeTeam: e.target.value })} />
+                        <input className="input text-xs flex-1" placeholder="Home team" value={form.homeTeam} onChange={(e) => setForm({ ...form, homeTeam: e.target.value })} />
                         <span className="text-muted text-xs">×</span>
-                        <input className="input text-xs flex-1" placeholder="Time fora" value={form.awayTeam} onChange={(e) => setForm({ ...form, awayTeam: e.target.value })} />
+                        <input className="input text-xs flex-1" placeholder="Away team" value={form.awayTeam} onChange={(e) => setForm({ ...form, awayTeam: e.target.value })} />
                         <button onClick={() => handleSave(m.id)} disabled={saving} className="btn-primary text-xs px-2 py-1">✓</button>
                         <button onClick={() => setEditing(null)} className="text-muted hover:text-white text-xs px-2 py-1">✕</button>
                       </div>
@@ -366,7 +366,7 @@ function TeamsTab({ matches, groupId, onRefresh }) {
                         <span className={`flex-1 text-sm ${m.awayTeam === 'TBD' ? 'text-muted italic' : 'font-medium'}`}>
                           {m.awayTeam !== 'TBD' && <span className="mr-1">{getFlag(m.awayTeam)}</span>}{m.awayTeam}
                         </span>
-                        <button onClick={() => startEdit(m)} className="text-xs text-pitch-light hover:underline shrink-0">editar</button>
+                        <button onClick={() => startEdit(m)} className="text-xs text-pitch-light hover:underline shrink-0">edit</button>
                       </>
                     )}
                   </div>
@@ -394,10 +394,10 @@ function SettingsTab({ settings, groupId, onRefresh }) {
     setMsg('');
     try {
       await api.put(`/groups/${groupId}/admin/settings`, form);
-      setMsg('Configurações salvas!');
+      setMsg('Settings saved!');
       onRefresh();
     } catch (err) {
-      setMsg('Erro: ' + err.message);
+      setMsg('Error: ' + err.message);
     } finally {
       setSaving(false);
     }
@@ -430,25 +430,25 @@ function SettingsTab({ settings, groupId, onRefresh }) {
     <div className="card p-4 divide-y divide-navy-border space-y-0">
       <Toggle
         label="Joker"
-        description="Permite usar um Joker por torneio (dobra os pontos do palpite)"
+        description="Allows using one Joker per tournament (doubles the prediction's points)"
         field="jokerEnabled"
       />
       <Toggle
-        label="Palpites pré-torneio"
-        description="Permite prever campeão, vice e artilheiro antes do torneio"
+        label="Pre-tournament predictions"
+        description="Allows predicting the champion, runner-up and top scorer before the tournament"
         field="preTournamentEnabled"
       />
       <Toggle
-        label="Mata-mata: apenas 90 minutos"
-        description="Pontuação baseada apenas no resultado dos 90 min (ignora prorrogação/pênaltis)"
+        label="Knockout: 90 minutes only"
+        description="Scoring based only on the 90-minute result (ignores extra time/penalties)"
         field="knockout90minOnly"
       />
       <div className="pt-3">
         {msg && (
-          <p className={`text-sm mb-2 ${msg.startsWith('Erro') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
+          <p className={`text-sm mb-2 ${msg.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
         )}
         <button onClick={handleSave} disabled={saving} className="btn-primary w-full">
-          {saving ? 'Salvando...' : 'Salvar Configurações'}
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
     </div>
@@ -495,51 +495,51 @@ function PreTournamentResultsTab({ groupId }) {
   return (
     <div className="space-y-4">
       <div className="card p-4 space-y-1">
-        <h3 className="font-semibold">Resultados Pré-Torneio</h3>
+        <h3 className="font-semibold">Pre-Tournament Results</h3>
         <p className="text-xs text-muted">
-          Defina os resultados reais após o torneio terminar. Os pontos serão calculados automaticamente:
-          Campeão correto <span className="text-gold font-bold">+10 pts</span>,
-          Vice correto <span className="text-gold font-bold">+5 pts</span>,
-          Artilheiro correto <span className="text-gold font-bold">+5 pts</span>.
+          Set the actual results after the tournament ends. Points will be calculated automatically:
+          Correct champion <span className="text-gold font-bold">+10 pts</span>,
+          Correct runner-up <span className="text-gold font-bold">+5 pts</span>,
+          Correct top scorer <span className="text-gold font-bold">+5 pts</span>.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="card p-4 space-y-4">
         <div>
-          <label className="text-xs text-muted block mb-1">🏆 Campeão</label>
+          <label className="text-xs text-muted block mb-1">🏆 Champion</label>
           <input
             type="text"
             className="input"
-            placeholder="Nome do país campeão"
+            placeholder="Champion country name"
             value={form.champion}
             onChange={(e) => setForm({ ...form, champion: e.target.value })}
           />
         </div>
         <div>
-          <label className="text-xs text-muted block mb-1">🥈 Vice-Campeão</label>
+          <label className="text-xs text-muted block mb-1">🥈 Runner-up</label>
           <input
             type="text"
             className="input"
-            placeholder="Nome do país vice-campeão"
+            placeholder="Runner-up country name"
             value={form.runnerUp}
             onChange={(e) => setForm({ ...form, runnerUp: e.target.value })}
           />
         </div>
         <div>
-          <label className="text-xs text-muted block mb-1">⚽ Artilheiro</label>
+          <label className="text-xs text-muted block mb-1">⚽ Top Scorer</label>
           <input
             type="text"
             className="input"
-            placeholder="Nome do artilheiro"
+            placeholder="Top scorer name"
             value={form.topScorer}
             onChange={(e) => setForm({ ...form, topScorer: e.target.value })}
           />
         </div>
         {msg && (
-          <p className={`text-sm ${msg.startsWith('Erro') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
+          <p className={`text-sm ${msg.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
         )}
         <button type="submit" disabled={saving} className="btn-primary w-full">
-          {saving ? 'Salvando...' : 'Salvar e Calcular Pontos'}
+          {saving ? 'Saving...' : 'Save and Calculate Points'}
         </button>
       </form>
     </div>

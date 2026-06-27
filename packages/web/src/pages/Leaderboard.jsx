@@ -5,9 +5,9 @@ import api from '../api/client';
 import LeaderboardTable from '../components/LeaderboardTable';
 
 const TABS = [
-  { key: 'ALL', label: 'Geral' },
-  { key: 'GROUP_STAGE', label: 'Fase de Grupos' },
-  { key: 'TODAY', label: 'Hoje' },
+  { key: 'ALL', label: 'Overall' },
+  { key: 'GROUP_STAGE', label: 'Group Stage' },
+  { key: 'TODAY', label: 'Today' },
 ];
 
 export default function Leaderboard() {
@@ -29,7 +29,7 @@ export default function Leaderboard() {
 
   return (
     <div className="space-y-5">
-      <h1 className="font-bold text-xl">Classificação</h1>
+      <h1 className="font-bold text-xl">Leaderboard</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-navy-border">
@@ -64,16 +64,16 @@ export default function Leaderboard() {
 
       {/* Legend */}
       <div className="card p-4 text-xs text-muted space-y-1">
-        <p className="font-semibold text-white text-sm mb-2">Como pontuar</p>
+        <p className="font-semibold text-white text-sm mb-2">How to score</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <span>Placar exato</span><span className="text-gold font-bold">10 pts</span>
-          <span>Vencedor + saldo</span><span className="text-gold font-bold">6 pts</span>
-          <span>Vencedor certo</span><span className="text-gold font-bold">3 pts</span>
-          <span>Totais invertidos</span><span className="text-pitch-light font-bold">+2 bônus</span>
-          <span>Total de gols certo</span><span className="text-pitch-light font-bold">+1 bônus</span>
-          <span>Sequência de 3</span><span className="text-pitch-light font-bold">+1 bônus</span>
+          <span>Exact score</span><span className="text-gold font-bold">10 pts</span>
+          <span>Winner + goal difference</span><span className="text-gold font-bold">6 pts</span>
+          <span>Correct winner</span><span className="text-gold font-bold">3 pts</span>
+          <span>Reversed totals</span><span className="text-pitch-light font-bold">+2 bonus</span>
+          <span>Correct total goals</span><span className="text-pitch-light font-bold">+1 bonus</span>
+          <span>Streak of 3</span><span className="text-pitch-light font-bold">+1 bonus</span>
         </div>
-        <p className="mt-2">Multiplicadores: Grupos ×1 · Oitavas ×1,5 · Quartas ×2 · Semi ×4 · Final ×5</p>
+        <p className="mt-2">Multipliers: Groups ×1 · R32 ×1.5 · R16 ×2 · QF ×3 · SF ×4 · Final ×5</p>
       </div>
     </div>
   );

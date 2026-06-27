@@ -7,12 +7,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { getFlag } from '../utils/flags';
 
 const STAGE_LABELS = {
-  GROUP_STAGE: 'Fase de Grupos',
-  ROUND_OF_32: 'Oitavas de Final',
-  ROUND_OF_16: 'Quartas de Final',
-  QUARTER_FINALS: 'Quartas de Final',
-  SEMI_FINALS: 'Semifinal',
-  THIRD_PLACE: '3º Lugar',
+  GROUP_STAGE: 'Group Stage',
+  ROUND_OF_32: 'Round of 32',
+  ROUND_OF_16: 'Round of 16',
+  QUARTER_FINALS: 'Quarterfinals',
+  SEMI_FINALS: 'Semifinals',
+  THIRD_PLACE: '3rd Place',
   FINAL: 'Final',
 };
 
@@ -61,7 +61,7 @@ export default function MatchDetail() {
       } else {
         await api.post(`/groups/${groupId}/predictions`, { matchId, homeGuess, awayGuess, jokerUsed });
       }
-      setSuccess('Palpite salvo com sucesso!');
+      setSuccess('Prediction saved successfully!');
       // Refresh
       const updated = await api.get(`/groups/${groupId}/matches/${matchId}`);
       setData(updated);
@@ -90,7 +90,7 @@ export default function MatchDetail() {
         onClick={() => navigate(-1)}
         className="text-muted text-sm hover:text-white flex items-center gap-1"
       >
-        ← Voltar
+        ← Back
       </button>
 
       {/* Match header */}
@@ -98,7 +98,7 @@ export default function MatchDetail() {
         <div className="flex items-center justify-between text-xs text-muted">
           <span>{STAGE_LABELS[match.stage] || match.stage}</span>
           <span className="badge bg-navy-border text-muted">
-            {STAGE_MULT[match.stage] || '×1'} multiplicador
+            {STAGE_MULT[match.stage] || '×1'} multiplier
           </span>
         </div>
 
@@ -136,17 +136,17 @@ export default function MatchDetail() {
         )}
 
         {live && (
-          <span className="badge bg-red-500/20 text-red-400 animate-pulse mx-auto">AO VIVO</span>
+          <span className="badge bg-red-500/20 text-red-400 animate-pulse mx-auto">LIVE</span>
         )}
         {finished && (
-          <span className="badge bg-green-500/10 text-green-400 mx-auto">Encerrado</span>
+          <span className="badge bg-green-500/10 text-green-400 mx-auto">Finished</span>
         )}
       </div>
 
       {/* Score result */}
       {score && (
         <div className="card p-4 flex items-center justify-between">
-          <span className="text-muted text-sm">Sua pontuação</span>
+          <span className="text-muted text-sm">Your score</span>
           <div className="text-right">
             <span className="text-gold font-bold text-2xl">+{score.final}</span>
             <span className="text-muted text-xs ml-1">pts</span>
@@ -160,7 +160,7 @@ export default function MatchDetail() {
       {/* Prediction form */}
       <div className="card p-6">
         <h2 className="font-bold mb-5 text-center">
-          {locked ? 'Seu Palpite' : 'Enviar Palpite'}
+          {locked ? 'Your Prediction' : 'Submit Prediction'}
         </h2>
 
         {error && (
@@ -191,7 +191,7 @@ export default function MatchDetail() {
       {(locked || finished) && allPredictions && allPredictions.length > 0 && (
         <div className="card overflow-hidden">
           <div className="px-4 py-3 border-b border-navy-border">
-            <h3 className="font-semibold text-sm">Palpites do Grupo</h3>
+            <h3 className="font-semibold text-sm">Group Predictions</h3>
           </div>
           <div className="divide-y divide-navy-border">
             {allPredictions.map((p) => {

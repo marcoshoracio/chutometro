@@ -94,7 +94,7 @@ module.exports = function adminRoutes(db) {
     do {
       code = generateCode();
       attempts++;
-      if (attempts > 20) return res.status(500).json({ error: 'Não foi possível gerar código único' });
+      if (attempts > 20) return res.status(500).json({ error: 'Could not generate unique code' });
     } while (db.prepare('SELECT id FROM groups WHERE code = ? AND id != ?').get(code, groupId));
 
     db.prepare('UPDATE groups SET code = ? WHERE id = ?').run(code, groupId);
@@ -110,7 +110,7 @@ module.exports = function adminRoutes(db) {
   router.post('/sync', authenticate, requireGroupAdmin(db), async (req, res) => {
     try {
       await syncAllMatches();
-      res.json({ message: 'Sincronização concluída' });
+      res.json({ message: 'Sync complete' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -120,15 +120,15 @@ module.exports = function adminRoutes(db) {
   router.patch('/matches/:matchId/teams', authenticate, requireGroupAdmin(db), (req, res) => {
     const { matchId } = req.params;
     const { homeTeam, awayTeam } = req.body;
-    if (!homeTeam && !awayTeam) return res.status(400).json({ error: 'Forneça ao menos um nome de time' });
+    if (!homeTeam && !awayTeam) return res.status(400).json({ error: 'Provide at least one team name' });
 
     const match = db.prepare('SELECT id FROM matches WHERE id = ?').get(matchId);
-    if (!match) return res.status(404).json({ error: 'Jogo não encontrado' });
+    if (!match) return res.status(404).json({ error: 'Match not found' });
 
     if (homeTeam) db.prepare('UPDATE matches SET home_team = ? WHERE id = ?').run(homeTeam.trim(), matchId);
     if (awayTeam) db.prepare('UPDATE matches SET away_team = ? WHERE id = ?').run(awayTeam.trim(), matchId);
 
-    res.json({ message: 'Times atualizados' });
+    res.json({ message: 'Teams updated' });
   });
 
   // POST /api/groups/:groupId/admin/pre-tournament-results — set correct answers and score predictions
@@ -166,7 +166,7 @@ module.exports = function adminRoutes(db) {
     });
     recalc();
 
-    res.json({ message: 'Resultados salvos e pontos calculados', results: settings.pre_tournament_results });
+    res.json({ message: 'Results saved and points calculated', results: settings.pre_tournament_results });
   });
 
   // GET /api/groups/:groupId/admin/pre-tournament-results
@@ -183,7 +183,7 @@ module.exports = function adminRoutes(db) {
     const { userId } = req.params;
 
     if (userId === req.user.userId) {
-      return res.status(400).json({ error: 'Você não pode remover a si mesmo como administrador' });
+      return res.status(400).json({ error: 'You cannot remove yourself as administrator' });
     }
 
     const result = db
@@ -191,10 +191,10 @@ module.exports = function adminRoutes(db) {
       .run(groupId, userId);
 
     if (result.changes === 0) {
-      return res.status(404).json({ error: 'Membro não encontrado' });
+      return res.status(404).json({ error: 'Member not found' });
     }
 
-    res.json({ message: 'Membro removido com sucesso' });
+    res.json({ message: 'Member removed successfully' });
   });
 
   return router;

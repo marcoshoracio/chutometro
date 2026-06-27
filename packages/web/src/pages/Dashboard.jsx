@@ -45,17 +45,17 @@ export default function Dashboard() {
       {myRank && (
         <div className="card p-4 flex items-center justify-between bg-gradient-to-r from-pitch/20 to-navy-card border-pitch/30">
           <div>
-            <p className="text-xs text-muted">Sua posição</p>
+            <p className="text-xs text-muted">Your position</p>
             <p className="font-bold text-2xl text-white">
-              {myRank.rank}º <span className="text-sm font-normal text-muted">lugar</span>
+              {myRank.rank}º <span className="text-sm font-normal text-muted">place</span>
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted">Pontos</p>
+            <p className="text-xs text-muted">Points</p>
             <p className="font-bold text-2xl text-gold">{myRank.totalPoints}</p>
           </div>
           <div className="text-right hidden sm:block">
-            <p className="text-xs text-muted">Exatos</p>
+            <p className="text-xs text-muted">Exact</p>
             <p className="font-bold text-xl text-pitch-light">{myRank.exactScores}</p>
           </div>
         </div>
@@ -64,13 +64,13 @@ export default function Dashboard() {
       {/* Upcoming matches */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-lg">Próximos Jogos</h2>
+          <h2 className="font-bold text-lg">Upcoming Matches</h2>
           <Link to={`/g/${groupId}/fixtures`} className="text-pitch-light text-sm hover:underline">
-            Ver todos
+            See all
           </Link>
         </div>
         {upcoming.length === 0 ? (
-          <p className="text-muted text-sm">Nenhum jogo agendado.</p>
+          <p className="text-muted text-sm">No matches scheduled.</p>
         ) : (
           <div className="space-y-2">
             {upcoming.map((m) => (
@@ -83,7 +83,7 @@ export default function Dashboard() {
       {/* Recent results */}
       {recent.length > 0 && (
         <section>
-          <h2 className="font-bold text-lg mb-3">Resultados Recentes</h2>
+          <h2 className="font-bold text-lg mb-3">Recent Results</h2>
           <div className="space-y-2">
             {recent.map((m) => (
               <MatchCard key={m.id} match={m} prediction={m.prediction} score={m.score} />
@@ -95,14 +95,14 @@ export default function Dashboard() {
       {/* Top 5 */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-lg">Classificação</h2>
+          <h2 className="font-bold text-lg">Leaderboard</h2>
           <Link to={`/g/${groupId}/leaderboard`} className="text-pitch-light text-sm hover:underline">
-            Ver completa
+            See full
           </Link>
         </div>
         <div className="card overflow-hidden">
           {top5.length === 0 ? (
-            <p className="p-4 text-muted text-sm">Sem pontuações ainda.</p>
+            <p className="p-4 text-muted text-sm">No scores yet.</p>
           ) : (
             <div className="divide-y divide-navy-border">
               {top5.map((entry, idx) => {
@@ -116,7 +116,7 @@ export default function Dashboard() {
                     <span className="w-6 text-center text-base">{medals[idx] || `${idx + 1}`}</span>
                     <span className={`flex-1 font-medium text-sm ${isMe ? 'text-pitch-light' : ''}`}>
                       {entry.displayName}
-                      {isMe && <span className="ml-1 text-muted text-xs">(você)</span>}
+                      {isMe && <span className="ml-1 text-muted text-xs">(you)</span>}
                     </span>
                     <span className="font-bold text-gold">{entry.totalPoints}</span>
                   </div>

@@ -12,7 +12,7 @@ export default function AuthVerify() {
   useEffect(() => {
     const token = searchParams.get('token');
     if (!token) {
-      setError('Token inválido na URL.');
+      setError('Invalid token in URL.');
       return;
     }
 
@@ -26,7 +26,7 @@ export default function AuthVerify() {
         }
       })
       .catch((err) => {
-        setError(err.message || 'Link inválido ou expirado.');
+        setError(err.message || 'Invalid or expired link.');
       });
   }, []);
 
@@ -35,10 +35,10 @@ export default function AuthVerify() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="card p-8 text-center max-w-sm w-full">
           <div className="text-4xl mb-4">❌</div>
-          <h2 className="text-xl font-bold mb-2">Erro ao verificar link</h2>
+          <h2 className="text-xl font-bold mb-2">Error verifying link</h2>
           <p className="text-muted mb-6">{error}</p>
           <a href="/join" className="btn-primary inline-block">
-            Tentar novamente
+            Try again
           </a>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function AuthVerify() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="w-10 h-10 border-2 border-pitch-light border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-muted">Verificando seu acesso...</p>
+        <p className="text-muted">Verifying your access...</p>
       </div>
     </div>
   );

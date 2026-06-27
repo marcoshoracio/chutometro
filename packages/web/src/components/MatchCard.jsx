@@ -4,12 +4,12 @@ import CountdownTimer from './CountdownTimer';
 import { getFlag } from '../utils/flags';
 
 const STAGE_LABELS = {
-  GROUP_STAGE: 'Fase de Grupos',
-  ROUND_OF_32: 'Oitavas de Final',
-  ROUND_OF_16: 'Quartas de Final',
-  QUARTER_FINALS: 'Quartas de Final',
-  SEMI_FINALS: 'Semifinal',
-  THIRD_PLACE: '3º Lugar',
+  GROUP_STAGE: 'Group Stage',
+  ROUND_OF_32: 'Round of 32',
+  ROUND_OF_16: 'Round of 16',
+  QUARTER_FINALS: 'Quarterfinals',
+  SEMI_FINALS: 'Semifinals',
+  THIRD_PLACE: '3rd Place',
   FINAL: 'Final',
 };
 
@@ -32,10 +32,10 @@ export default function MatchCard({ match, prediction, score, compact = false })
         <span>{STAGE_LABELS[match.stage] || match.stage}</span>
         <div className="flex items-center gap-2">
           {live && (
-            <span className="badge bg-red-500/20 text-red-400 animate-pulse">AO VIVO</span>
+            <span className="badge bg-red-500/20 text-red-400 animate-pulse">LIVE</span>
           )}
           {!finished && !live && <CountdownTimer kickoffAt={match.kickoffAt} />}
-          {finished && <span className="badge bg-green-500/10 text-green-400">Encerrado</span>}
+          {finished && <span className="badge bg-green-500/10 text-green-400">Finished</span>}
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export default function MatchCard({ match, prediction, score, compact = false })
         <div className="flex items-center justify-between border-t border-navy-border pt-2 mt-1">
           {prediction ? (
             <span className="text-xs text-muted">
-              Seu chute:{' '}
+              Your prediction:{' '}
               <span className="text-white font-medium">
                 {prediction.homeGuess} – {prediction.awayGuess}
               </span>
@@ -87,7 +87,7 @@ export default function MatchCard({ match, prediction, score, compact = false })
             </span>
           ) : (
             <span className="text-xs text-muted italic">
-              {match.locked ? 'Sem palpite' : 'Chute não enviado'}
+              {match.locked ? 'No prediction' : 'No prediction submitted'}
             </span>
           )}
 
@@ -98,7 +98,7 @@ export default function MatchCard({ match, prediction, score, compact = false })
             <span className="text-xs text-muted">0 pts</span>
           )}
           {match.locked && !finished && (
-            <span className="badge bg-red-500/10 text-red-400 text-xs">Bloqueado</span>
+            <span className="badge bg-red-500/10 text-red-400 text-xs">Locked</span>
           )}
         </div>
       )}

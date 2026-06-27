@@ -14,7 +14,7 @@ module.exports = function leaderboardRoutes(db) {
     const member = db
       .prepare('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?')
       .get(groupId, req.user.userId);
-    if (!member) return res.status(403).json({ error: 'Você não é membro deste grupo' });
+    if (!member) return res.status(403).json({ error: 'You are not a member of this group' });
 
     let stageFilter = '';
     const args = [groupId];

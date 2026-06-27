@@ -15,12 +15,12 @@ module.exports = function preTournamentRoutes(db) {
     const member = db
       .prepare('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?')
       .get(groupId, req.user.userId);
-    if (!member) return res.status(403).json({ error: 'Você não é membro deste grupo' });
+    if (!member) return res.status(403).json({ error: 'You are not a member of this group' });
 
     const group = db.prepare('SELECT settings FROM groups WHERE id = ?').get(groupId);
     const settings = JSON.parse(group?.settings || '{}');
     if (!settings.pre_tournament_enabled) {
-      return res.status(400).json({ error: 'Palpites pré-torneio não habilitados neste grupo' });
+      return res.status(400).json({ error: 'Pre-tournament predictions are not enabled for this group' });
     }
 
     const now = Math.floor(Date.now() / 1000);
@@ -50,7 +50,7 @@ module.exports = function preTournamentRoutes(db) {
     const member = db
       .prepare('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?')
       .get(groupId, req.user.userId);
-    if (!member) return res.status(403).json({ error: 'Você não é membro deste grupo' });
+    if (!member) return res.status(403).json({ error: 'You are not a member of this group' });
 
     const pred = db
       .prepare('SELECT * FROM pre_tournament_predictions WHERE user_id = ? AND group_id = ?')

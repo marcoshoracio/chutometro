@@ -20,7 +20,7 @@ module.exports = function groupRoutes(db) {
   router.post('/', authenticate, (req, res) => {
     const { name } = req.body;
     if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'Nome do grupo obrigatório' });
+      return res.status(400).json({ error: 'Group name is required' });
     }
 
     let code;
@@ -28,7 +28,7 @@ module.exports = function groupRoutes(db) {
     do {
       code = generateCode();
       attempts++;
-      if (attempts > 20) return res.status(500).json({ error: 'Não foi possível gerar código único' });
+      if (attempts > 20) return res.status(500).json({ error: 'Could not generate unique code' });
     } while (db.prepare('SELECT id FROM groups WHERE code = ?').get(code));
 
     const groupId = uuidv4();
@@ -58,7 +58,7 @@ module.exports = function groupRoutes(db) {
   // GET /api/groups/:code — get group by invite code
   router.get('/:code', (req, res) => {
     const group = db.prepare('SELECT * FROM groups WHERE code = ?').get(req.params.code.toUpperCase());
-    if (!group) return res.status(404).json({ error: 'Grupo não encontrado' });
+    if (!group) return res.status(404).json({ error: 'Group not found' });
 
     const memberCount = db.prepare('SELECT COUNT(*) as c FROM group_members WHERE group_id = ?').get(group.id).c;
     res.json({ group: formatGroup(group), memberCount });
@@ -67,7 +67,7 @@ module.exports = function groupRoutes(db) {
   // POST /api/groups/:code/join — join group by code
   router.post('/:code/join', authenticate, (req, res) => {
     const group = db.prepare('SELECT * FROM groups WHERE code = ?').get(req.params.code.toUpperCase());
-    if (!group) return res.status(404).json({ error: 'Grupo não encontrado' });
+    if (!group) return res.status(404).json({ error: 'Group not found' });
 
     const existing = db
       .prepare('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?')

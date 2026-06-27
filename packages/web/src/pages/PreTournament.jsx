@@ -46,10 +46,10 @@ export default function PreTournament() {
     setMsg('');
     try {
       await api.post(`/groups/${groupId}/pre-tournament`, form);
-      setMsg('Palpites salvos com sucesso!');
+      setMsg('Predictions saved successfully!');
       setExisting(form);
     } catch (err) {
-      setMsg('Erro: ' + err.message);
+      setMsg('Error: ' + err.message);
     } finally {
       setSaving(false);
     }
@@ -62,7 +62,7 @@ export default function PreTournament() {
       <div className="card p-6 text-center">
         <p className="text-red-400">{error}</p>
         {error.includes('habilitados') && (
-          <p className="text-muted text-sm mt-2">O administrador não ativou os palpites pré-torneio.</p>
+          <p className="text-muted text-sm mt-2">The administrator has not enabled pre-tournament predictions.</p>
         )}
       </div>
     );
@@ -71,60 +71,60 @@ export default function PreTournament() {
   return (
     <div className="space-y-5 max-w-lg mx-auto">
       <div>
-        <h1 className="font-bold text-xl">Palpites Pré-Torneio</h1>
+        <h1 className="font-bold text-xl">Pre-Tournament Predictions</h1>
         <p className="text-muted text-sm mt-1">
-          Faça suas previsões antes do torneio começar. Você pode alterar até o início da competição.
+          Make your predictions before the tournament starts. You can change them until the competition begins.
         </p>
       </div>
 
       {existing && (
         <div className="card p-3 bg-pitch/10 border-pitch/30">
-          <p className="text-xs text-pitch-light font-medium">Palpite enviado anteriormente</p>
+          <p className="text-xs text-pitch-light font-medium">Prediction previously submitted</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
         <SelectField
-          label="Campeão 🏆"
+          label="Champion 🏆"
           value={form.champion}
           onChange={(v) => setForm({ ...form, champion: v })}
         />
         <SelectField
-          label="Vice-Campeão 🥈"
+          label="Runner-up 🥈"
           value={form.runnerUp}
           onChange={(v) => setForm({ ...form, runnerUp: v })}
         />
         <div>
-          <label className="text-xs text-muted block mb-1">Artilheiro ⚽</label>
+          <label className="text-xs text-muted block mb-1">Top Scorer ⚽</label>
           <input
             type="text"
             className="input"
-            placeholder="Nome do artilheiro"
+            placeholder="Top scorer name"
             value={form.topScorer}
             onChange={(e) => setForm({ ...form, topScorer: e.target.value })}
           />
         </div>
 
         {msg && (
-          <p className={`text-sm ${msg.startsWith('Erro') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
+          <p className={`text-sm ${msg.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
         )}
 
         <button type="submit" disabled={saving} className="btn-primary w-full">
-          {saving ? 'Salvando...' : existing ? 'Atualizar Palpites' : 'Enviar Palpites'}
+          {saving ? 'Saving...' : existing ? 'Update Predictions' : 'Submit Predictions'}
         </button>
       </form>
 
       {allPredictions.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Palpites do Grupo</h2>
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Group Predictions</h2>
           <div className="card overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-navy-border text-xs text-muted uppercase tracking-wider">
-                  <th className="text-left px-4 py-2">Jogador</th>
-                  <th className="text-left px-4 py-2">🏆 Campeão</th>
-                  <th className="text-left px-4 py-2">🥈 Vice</th>
-                  <th className="text-left px-4 py-2">⚽ Artilheiro</th>
+                  <th className="text-left px-4 py-2">Player</th>
+                  <th className="text-left px-4 py-2">🏆 Champion</th>
+                  <th className="text-left px-4 py-2">🥈 Runner-up</th>
+                  <th className="text-left px-4 py-2">⚽ Top Scorer</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-navy-border">
@@ -159,7 +159,7 @@ function SelectField({ label, value, onChange }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
-        <option value="">Selecionar seleção...</option>
+        <option value="">Select team...</option>
         {TEAMS.map((t) => (
           <option key={t} value={t}>{t}</option>
         ))}

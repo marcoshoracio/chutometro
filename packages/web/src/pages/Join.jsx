@@ -60,7 +60,7 @@ export default function Join() {
       setGroupInfo(data);
       setStep('auth');
     } catch (err) {
-      setError('Código de grupo não encontrado.');
+      setError('Group code not found.');
     } finally {
       setLoading(false);
     }
@@ -113,11 +113,11 @@ export default function Join() {
           <div className="text-center">
             <div className="text-5xl mb-3">⚽</div>
             <h1 className="text-3xl font-extrabold text-pitch-light">Chutômetro</h1>
-            <p className="text-muted mt-1">Olá, {user.displayName}!</p>
+            <p className="text-muted mt-1">Hello, {user.displayName}!</p>
           </div>
 
           <div className="card p-6 space-y-4">
-            <h2 className="font-bold text-lg">Entrar em um grupo</h2>
+            <h2 className="font-bold text-lg">Join a group</h2>
             <form
               onSubmit={(e) => { e.preventDefault(); handleJoinWithCode(code.trim().toUpperCase()); }}
               className="space-y-3"
@@ -125,30 +125,30 @@ export default function Join() {
               <input
                 type="text"
                 className="input uppercase tracking-widest font-mono text-center text-lg"
-                placeholder="CÓDIGO"
+                placeholder="CODE"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 maxLength={6}
               />
               {error && <p className="text-red-400 text-sm">{error}</p>}
               <button type="submit" disabled={loading || code.trim().length < 6} className="btn-primary w-full">
-                {loading ? 'Entrando...' : 'Entrar no Grupo'}
+                {loading ? 'Joining...' : 'Join Group'}
               </button>
             </form>
           </div>
 
           <div className="card p-6 space-y-4">
-            <h2 className="font-bold text-lg">Criar novo grupo</h2>
+            <h2 className="font-bold text-lg">Create a new group</h2>
             <form onSubmit={handleCreateGroup} className="space-y-3">
               <input
                 type="text"
                 className="input"
-                placeholder="Nome do seu bolão"
+                placeholder="Your Bolão name"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
               />
               <button type="submit" disabled={loading || !groupName.trim()} className="btn-primary w-full">
-                {loading ? 'Criando...' : 'Criar Bolão'}
+                {loading ? 'Creating...' : 'Create Bolão'}
               </button>
             </form>
           </div>
@@ -164,15 +164,15 @@ export default function Join() {
         <div className="text-center">
           <div className="text-5xl mb-3">⚽</div>
           <h1 className="text-3xl font-extrabold text-pitch-light">Chutômetro</h1>
-          <p className="text-muted mt-1 text-sm">Bolão da Copa do Mundo 2026</p>
+          <p className="text-muted mt-1 text-sm">World Cup 2026 Bolão</p>
         </div>
 
         {step === 'group' && (
           <div className="card p-6 space-y-4">
-            <h2 className="font-bold text-lg">Entrar no Bolão</h2>
+            <h2 className="font-bold text-lg">Join the Bolão</h2>
             <form onSubmit={handleLookupCode} className="space-y-3">
               <div>
-                <label className="text-xs text-muted block mb-1">Código do grupo</label>
+                <label className="text-xs text-muted block mb-1">Group code</label>
                 <input
                   type="text"
                   className="input uppercase tracking-widest font-mono text-center text-xl"
@@ -189,16 +189,16 @@ export default function Join() {
                 disabled={loading || code.length < 6}
                 className="btn-primary w-full"
               >
-                {loading ? 'Buscando...' : 'Continuar'}
+                {loading ? 'Looking up...' : 'Continue'}
               </button>
             </form>
             <div className="border-t border-navy-border pt-4 text-center">
-              <p className="text-muted text-xs mb-3">Quer criar seu próprio bolão?</p>
+              <p className="text-muted text-xs mb-3">Want to create your own Bolão?</p>
               <button
                 onClick={() => { setStep('create-auth'); setError(''); }}
                 className="btn-secondary w-full"
               >
-                Criar novo bolão
+                Create new Bolão
               </button>
             </div>
           </div>
@@ -206,26 +206,26 @@ export default function Join() {
 
         {step === 'create-auth' && (
           <div className="card p-6 space-y-4">
-            <h2 className="font-bold text-lg">Criar novo bolão</h2>
-            <p className="text-muted text-sm">Entre com seu e-mail para começar.</p>
+            <h2 className="font-bold text-lg">Create new Bolão</h2>
+            <p className="text-muted text-sm">Enter your email to get started.</p>
             <form onSubmit={handleRequestMagicLink} className="space-y-3">
               <div>
-                <label className="text-xs text-muted block mb-1">Seu nome</label>
+                <label className="text-xs text-muted block mb-1">Your name</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Como quer ser chamado?"
+                  placeholder="What should we call you?"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   autoFocus
                 />
               </div>
               <div>
-                <label className="text-xs text-muted block mb-1">E-mail</label>
+                <label className="text-xs text-muted block mb-1">Email</label>
                 <input
                   type="email"
                   className="input"
-                  placeholder="seu@email.com"
+                  placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -237,14 +237,14 @@ export default function Join() {
                 disabled={loading || !email.trim()}
                 className="btn-primary w-full"
               >
-                {loading ? 'Enviando...' : 'Enviar link de acesso'}
+                {loading ? 'Sending...' : 'Send access link'}
               </button>
             </form>
             <button
               onClick={() => { setStep('group'); setError(''); }}
               className="text-muted text-xs hover:text-white w-full text-center"
             >
-              Voltar
+              Back
             </button>
           </div>
         )}
@@ -252,29 +252,29 @@ export default function Join() {
         {step === 'auth' && groupInfo && (
           <div className="card p-6 space-y-4">
             <div className="text-center">
-              <p className="text-muted text-sm">Entrando em</p>
+              <p className="text-muted text-sm">Joining</p>
               <p className="font-bold text-xl text-pitch-light">{groupInfo.group.name}</p>
-              <p className="text-xs text-muted">{groupInfo.memberCount} participantes</p>
+              <p className="text-xs text-muted">{groupInfo.memberCount} members</p>
             </div>
             <hr className="border-navy-border" />
-            <h2 className="font-bold">Seu acesso por e-mail</h2>
+            <h2 className="font-bold">Access via email</h2>
             <form onSubmit={handleRequestMagicLink} className="space-y-3">
               <div>
-                <label className="text-xs text-muted block mb-1">Nome de exibição</label>
+                <label className="text-xs text-muted block mb-1">Display name</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Como quer ser chamado?"
+                  placeholder="What should we call you?"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                 />
               </div>
               <div>
-                <label className="text-xs text-muted block mb-1">E-mail</label>
+                <label className="text-xs text-muted block mb-1">Email</label>
                 <input
                   type="email"
                   className="input"
-                  placeholder="seu@email.com"
+                  placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -287,14 +287,14 @@ export default function Join() {
                 disabled={loading || !email.trim()}
                 className="btn-primary w-full"
               >
-                {loading ? 'Enviando...' : 'Enviar link de acesso'}
+                {loading ? 'Sending...' : 'Send access link'}
               </button>
             </form>
             <button
               onClick={() => { setStep('group'); setError(''); }}
               className="text-muted text-xs hover:text-white w-full text-center"
             >
-              Voltar
+              Back
             </button>
           </div>
         )}
@@ -302,19 +302,19 @@ export default function Join() {
         {step === 'magic-sent' && (
           <div className="card p-8 text-center space-y-4">
             <div className="text-5xl">📧</div>
-            <h2 className="font-bold text-xl">Verifique seu e-mail</h2>
+            <h2 className="font-bold text-xl">Check your email</h2>
             <p className="text-muted text-sm">
-              Enviamos um link mágico para <span className="text-white font-medium">{email}</span>.
-              Clique nele para entrar — o link expira em 15 minutos.
+              We sent a magic link to <span className="text-white font-medium">{email}</span>.
+              Click it to sign in — the link expires in 15 minutes.
             </p>
             <p className="text-xs text-muted italic">
-              Em modo dev, o link aparece no console da API.
+              In dev mode, the link appears in the API console.
             </p>
             <button
               onClick={() => setStep('auth')}
               className="text-pitch-light text-sm hover:underline"
             >
-              Reenviar link
+              Resend link
             </button>
           </div>
         )}

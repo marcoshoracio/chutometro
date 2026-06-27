@@ -14,11 +14,11 @@ const KNOCKOUT_STAGES = [
 ];
 
 const STAGE_LABELS = {
-  ROUND_OF_32: 'Oitavas de Final',
-  ROUND_OF_16: 'Quartas de Final',
-  QUARTER_FINALS: 'Quartas de Final',
-  SEMI_FINALS: 'Semifinal',
-  THIRD_PLACE: '3º Lugar',
+  ROUND_OF_32: 'Round of 32',
+  ROUND_OF_16: 'Round of 16',
+  QUARTER_FINALS: 'Quarterfinals',
+  SEMI_FINALS: 'Semifinals',
+  THIRD_PLACE: '3rd Place',
   FINAL: 'Final',
 };
 
@@ -59,10 +59,10 @@ export default function Fixtures() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-xl">Jogos</h1>
+        <h1 className="font-bold text-xl">Matches</h1>
         {pendingPredictions > 0 && (
           <span className="badge bg-gold/20 text-gold text-xs">
-            {pendingPredictions} sem palpite
+            {pendingPredictions} without prediction
           </span>
         )}
       </div>
@@ -70,7 +70,7 @@ export default function Fixtures() {
       <StageFilter value={stage} onChange={setStage} availableStages={availableStages} />
 
       {stagesPresent.length === 0 && (
-        <p className="text-muted text-center py-8">Nenhum jogo encontrado.</p>
+        <p className="text-muted text-center py-8">No matches found.</p>
       )}
 
       {stagesPresent.map((s) => (

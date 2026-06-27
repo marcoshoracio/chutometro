@@ -16,7 +16,7 @@ module.exports = function authRoutes(db) {
   router.post('/request-magic-link', async (req, res) => {
     const { email, displayName, redirectTo } = req.body;
     if (!email || typeof email !== 'string') {
-      return res.status(400).json({ error: 'E-mail obrigatório' });
+      return res.status(400).json({ error: 'Email is required' });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -42,7 +42,7 @@ module.exports = function authRoutes(db) {
     const resend = getResend();
     if (!resend) {
       console.log(`\n[magic-link] ${magicLink}\n`);
-      return res.json({ message: 'Link enviado' });
+      return res.json({ message: 'Link sent' });
     }
 
     console.log(`\n[magic-link] ${magicLink}\n`);
@@ -51,38 +51,38 @@ module.exports = function authRoutes(db) {
       await resend.emails.send({
         from: 'Chutômetro <noreply@marcosh.com>',
         to: normalizedEmail,
-        subject: 'Seu link de acesso — Chutômetro ⚽',
+        subject: 'Your access link — Chutômetro ⚽',
         html: `
           <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f1923;padding:32px;border-radius:12px">
             <h2 style="color:#22c55e;margin-top:0">Chutômetro ⚽</h2>
-            <p style="color:#e2e8f0">Clique no link abaixo para entrar no seu bolão. O link expira em <strong>15 minutos</strong>.</p>
+            <p style="color:#e2e8f0">Click the link below to join your Bolão. The link expires in <strong>15 minutes</strong>.</p>
             <a href="${magicLink}" style="display:inline-block;background:#1a7a4a;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-              Entrar no Chutômetro
+              Enter Chutômetro
             </a>
-            <p style="color:#64748b;font-size:12px;margin-top:24px">Se você não solicitou este e-mail, ignore-o.</p>
+            <p style="color:#64748b;font-size:12px;margin-top:24px">If you did not request this email, please ignore it.</p>
           </div>
         `,
       });
       console.log(`[auth] Email sent OK to ${normalizedEmail}`);
-      res.json({ message: 'Link de acesso enviado para ' + normalizedEmail });
+      res.json({ message: 'Access link sent to ' + normalizedEmail });
     } catch (err) {
       console.error('[auth] Resend error:', err.message);
       console.log(`\n[magic-link] ${magicLink}\n`);
-      res.json({ message: 'Link enviado' });
+      res.json({ message: 'Link sent' });
     }
   });
 
   // GET /api/auth/verify?token=xxx
   router.get('/verify', (req, res) => {
     const { token } = req.query;
-    if (!token) return res.status(400).json({ error: 'Token obrigatório' });
+    if (!token) return res.status(400).json({ error: 'Token is required' });
 
     const link = db.prepare('SELECT * FROM magic_links WHERE token = ?').get(token);
-    if (!link) return res.status(400).json({ error: 'Link inválido' });
-    if (link.used) return res.status(400).json({ error: 'Link já utilizado' });
+    if (!link) return res.status(400).json({ error: 'Invalid link' });
+    if (link.used) return res.status(400).json({ error: 'Link already used' });
 
     const now = Math.floor(Date.now() / 1000);
-    if (link.expires_at < now) return res.status(400).json({ error: 'Link expirado' });
+    if (link.expires_at < now) return res.status(400).json({ error: 'Link expired' });
 
     // Mark as used
     db.prepare('UPDATE magic_links SET used = 1 WHERE id = ?').run(link.id);
@@ -114,7 +114,7 @@ module.exports = function authRoutes(db) {
   // GET /api/auth/me
   router.get('/me', authenticate, (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
-    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+    if (!user) return res.status(404).json({ error: 'User not found' });
     const groups = db.prepare(
       'SELECT g.id, g.name FROM groups g JOIN group_members gm ON gm.group_id = g.id WHERE gm.user_id = ? ORDER BY gm.joined_at ASC'
     ).all(user.id);

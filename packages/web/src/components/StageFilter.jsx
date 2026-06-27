@@ -1,12 +1,12 @@
 import React from 'react';
 
 const STAGES = [
-  { value: 'ALL',           label: 'Todos' },
-  { value: 'ROUND_OF_32',   label: 'Oitavas' },
-  { value: 'ROUND_OF_16',   label: 'Quartas' },
-  { value: 'QUARTER_FINALS',label: 'Semis' },
-  { value: 'SEMI_FINALS',   label: 'Final 4' },
-  { value: 'THIRD_PLACE',   label: '3º Lugar' },
+  { value: 'ALL',           label: 'All' },
+  { value: 'ROUND_OF_32',   label: 'R32' },
+  { value: 'ROUND_OF_16',   label: 'R16' },
+  { value: 'QUARTER_FINALS',label: 'QF' },
+  { value: 'SEMI_FINALS',   label: 'SF' },
+  { value: 'THIRD_PLACE',   label: '3rd Place' },
   { value: 'FINAL',         label: 'Final' },
 ];
 

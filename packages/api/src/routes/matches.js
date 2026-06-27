@@ -14,7 +14,7 @@ module.exports = function matchRoutes(db) {
     const member = db
       .prepare('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?')
       .get(groupId, req.user.userId);
-    if (!member) return res.status(403).json({ error: 'Você não é membro deste grupo' });
+    if (!member) return res.status(403).json({ error: 'You are not a member of this group' });
 
     const matches = db.prepare(
       "SELECT * FROM matches WHERE stage != 'GROUP_STAGE' ORDER BY kickoff_at ASC"
@@ -56,10 +56,10 @@ module.exports = function matchRoutes(db) {
     const member = db
       .prepare('SELECT id FROM group_members WHERE group_id = ? AND user_id = ?')
       .get(groupId, req.user.userId);
-    if (!member) return res.status(403).json({ error: 'Você não é membro deste grupo' });
+    if (!member) return res.status(403).json({ error: 'You are not a member of this group' });
 
     const match = db.prepare('SELECT * FROM matches WHERE id = ?').get(matchId);
-    if (!match) return res.status(404).json({ error: 'Jogo não encontrado' });
+    if (!match) return res.status(404).json({ error: 'Match not found' });
 
     const prediction = db
       .prepare('SELECT * FROM predictions WHERE user_id = ? AND group_id = ? AND match_id = ?')
