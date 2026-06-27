@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback((token, userData) => {
     localStorage.setItem('chutometro_token', token);
-    setUser(userData);
+    setUser({ ...userData, groups: userData.groups || [] });
   }, []);
 
   const logout = useCallback(() => {

@@ -3,10 +3,68 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { Resend } = require('resend');
+const bcrypt = require('bcryptjs');
 const { signToken, authenticate } = require('../middleware/auth');
 
 module.exports = function authRoutes(db) {
   const router = express.Router();
+
+  // POST /api/auth/register
+  router.post('/register', async (req, res) => {
+    const { email, displayName, password } = req.body;
+    if (!email || !displayName || !password) {
+      return res.status(400).json({ error: 'Email, name, and password are required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(normalizedEmail);
+    if (existing) {
+      return res.status(409).json({ error: 'An account with this email already exists' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const userId = uuidv4();
+    const now = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT INTO users (id, email, display_name, password_hash, created_at) VALUES (?, ?, ?, ?, ?)')
+      .run(userId, normalizedEmail, displayName.trim(), hash, now);
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    const token = signToken(user.id);
+    const groups = db.prepare(
+      'SELECT g.id, g.name FROM groups g JOIN group_members gm ON gm.group_id = g.id WHERE gm.user_id = ? ORDER BY gm.joined_at ASC'
+    ).all(user.id);
+
+    res.status(201).json({ token, user: { id: user.id, email: user.email, displayName: user.display_name }, groups });
+  });
+
+  // POST /api/auth/login
+  router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail);
+    if (!user || !user.password_hash) {
+      return res.status(401).json({ error: 'Incorrect email or password' });
+    }
+
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) {
+      return res.status(401).json({ error: 'Incorrect email or password' });
+    }
+
+    const token = signToken(user.id);
+    const groups = db.prepare(
+      'SELECT g.id, g.name FROM groups g JOIN group_members gm ON gm.group_id = g.id WHERE gm.user_id = ? ORDER BY gm.joined_at ASC'
+    ).all(user.id);
+
+    res.json({ token, user: { id: user.id, email: user.email, displayName: user.display_name }, groups });
+  });
 
   function getResend() {
     return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
