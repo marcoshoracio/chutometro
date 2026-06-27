@@ -47,6 +47,23 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, env: process.env.NODE_ENV });
 });
 
+// TEMPORARY reset endpoint — remove after use
+app.post('/api/reset-all-data', (req, res) => {
+  if (req.query.secret !== 'chutometro-reset-2026') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  db.exec(`
+    DELETE FROM scores;
+    DELETE FROM predictions;
+    DELETE FROM pre_tournament_predictions;
+    DELETE FROM group_members;
+    DELETE FROM groups;
+    DELETE FROM magic_links;
+    DELETE FROM users;
+  `);
+  res.json({ message: 'All user data cleared.' });
+});
+
 // Serve React frontend in production
 if (isProd) {
   const distPath = path.join(__dirname, '../../web/dist');
