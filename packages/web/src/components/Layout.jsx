@@ -101,6 +101,17 @@ export default function Layout() {
             >
               Pré-Torneio
             </NavLink>
+            <NavLink
+              to={`/g/${groupId}/regras`}
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive ? 'bg-pitch text-white' : 'text-muted hover:text-white'
+                }`
+              }
+            >
+              Regras
+            </NavLink>
             <hr className="border-navy-border" />
             <button
               onClick={handleLogout}
