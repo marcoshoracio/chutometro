@@ -2,22 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/client';
 
-const TEAMS = [
-  'Argentina', 'Austrália', 'Arábia Saudita', 'Bélgica', 'Brasil', 'Camarões',
-  'Canadá', 'Chile', 'Colômbia', 'Coreia do Sul', 'Costa Rica', 'Costa do Marfim',
-  'Croácia', 'Dinamarca', 'Egito', 'Equador', 'Espanha', 'EUA',
-  'França', 'Gana', 'Alemanha', 'Irã', 'Itália', 'Japão',
-  'Marrocos', 'México', 'Nigéria', 'Nova Zelândia', 'Países Baixos', 'Panamá',
-  'Peru', 'Polônia', 'Portugal', 'Qatar', 'República Tcheca', 'Romênia',
-  'Senegal', 'África do Sul', 'Tunísia', 'Turquia', 'Ucrânia', 'Uruguai',
-  'Venezuela', 'Bolívia', 'Argélia', 'Indonésia',
-].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
 export default function PreTournament() {
   const { groupId } = useParams();
   const [form, setForm] = useState({ champion: '', runnerUp: '', topScorer: '' });
   const [existing, setExisting] = useState(null);
   const [allPredictions, setAllPredictions] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -35,6 +26,7 @@ export default function PreTournament() {
           });
         }
         setAllPredictions(d.allPredictions || []);
+        setTeams(d.teams || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -88,11 +80,13 @@ export default function PreTournament() {
           label="Champion 🏆"
           value={form.champion}
           onChange={(v) => setForm({ ...form, champion: v })}
+          teams={teams}
         />
         <SelectField
           label="Runner-up 🥈"
           value={form.runnerUp}
           onChange={(v) => setForm({ ...form, runnerUp: v })}
+          teams={teams}
         />
         <div>
           <label className="text-xs text-muted block mb-1">Top Scorer ⚽</label>
@@ -150,7 +144,7 @@ export default function PreTournament() {
   );
 }
 
-function SelectField({ label, value, onChange }) {
+function SelectField({ label, value, onChange, teams }) {
   return (
     <div>
       <label className="text-xs text-muted block mb-1">{label}</label>
@@ -160,7 +154,7 @@ function SelectField({ label, value, onChange }) {
         onChange={(e) => onChange(e.target.value)}
       >
         <option value="">Select team...</option>
-        {TEAMS.map((t) => (
+        {teams.map((t) => (
           <option key={t} value={t}>{t}</option>
         ))}
       </select>

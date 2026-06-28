@@ -65,9 +65,24 @@ module.exports = function preTournamentRoutes(db) {
       ORDER BY ptp.points DESC, u.display_name ASC
     `).all(groupId);
 
+    // Teams from Round of 32 — exclude slot codes (short uppercase codes like TBD, 1G, 3ABCDF)
+    const r32Rows = db.prepare(`
+      SELECT home_team, away_team FROM matches WHERE stage = 'ROUND_OF_32'
+    `).all();
+    const teamSet = new Set();
+    for (const row of r32Rows) {
+      for (const t of [row.home_team, row.away_team]) {
+        if (t && t !== 'TBD' && !/^[0-9]/.test(t) && !/^[A-Z]{1,3}$/.test(t) && !/^3[A-Z]+$/.test(t)) {
+          teamSet.add(t);
+        }
+      }
+    }
+    const teams = [...teamSet].sort((a, b) => a.localeCompare(b));
+
     res.json({
       prediction: pred ? formatPred(pred) : null,
       allPredictions: all.map((p) => ({ ...formatPred(p), displayName: p.display_name })),
+      teams,
     });
   });
 
