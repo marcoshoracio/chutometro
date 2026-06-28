@@ -20,10 +20,8 @@ export default function Join() {
     const code = searchParams.get('code');
     if (code) {
       handleJoinWithCode(code.toUpperCase());
-    } else if (user.groups?.length) {
-      navigate(`/g/${user.groups[0].id}`, { replace: true });
     } else {
-      setStep('join-code');
+      navigate('/groups', { replace: true });
     }
   }, [user]);
 
@@ -84,8 +82,8 @@ export default function Join() {
     setLoading(true);
     setError('');
     try {
-      const data = await api.post(`/groups/${code}/join`);
-      navigate(`/g/${data.group.id}`, { replace: true });
+      await api.post(`/groups/${code}/join`);
+      navigate('/groups', { replace: true });
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -105,11 +103,6 @@ export default function Join() {
     } finally {
       setLoading(false);
     }
-  }
-
-  // Already logged in and in a group — redirect handled by useEffect
-  if (user && user.groups?.length && !searchParams.get('code')) {
-    return <Navigate to={`/g/${user.groups[0].id}`} replace />;
   }
 
   return (

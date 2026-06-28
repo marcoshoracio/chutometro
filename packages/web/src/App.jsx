@@ -15,6 +15,7 @@ import WCGroups from './pages/WCGroups';
 import Bracket from './pages/Bracket';
 import Rules from './pages/Rules';
 import ResetPassword from './pages/ResetPassword';
+import Groups from './pages/Groups';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -26,7 +27,7 @@ function RequireAuth({ children }) {
 function RootRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div className="flex items-center justify-center min-h-screen"><Spinner /></div>;
-  if (user?.groups?.length) return <Navigate to={`/g/${user.groups[0].id}`} replace />;
+  if (user) return <Navigate to="/groups" replace />;
   return <Navigate to="/join" replace />;
 }
 
@@ -42,6 +43,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/join" element={<Join />} />
+          <Route path="/groups" element={<RequireAuth><Groups /></RequireAuth>} />
           <Route path="/auth/verify" element={<AuthVerify />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route

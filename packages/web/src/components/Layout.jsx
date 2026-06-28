@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout() {
@@ -24,10 +24,10 @@ export default function Layout() {
       {/* Header */}
       <header className="bg-navy-card border-b border-navy-border sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link to="/groups" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <span className="text-xl">⚽</span>
             <span className="font-bold text-pitch-light tracking-tight">Chutômetro</span>
-          </div>
+          </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden sm:flex items-center gap-1">
