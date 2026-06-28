@@ -72,7 +72,8 @@ module.exports = function preTournamentRoutes(db) {
     const teamSet = new Set();
     for (const row of r32Rows) {
       for (const t of [row.home_team, row.away_team]) {
-        if (t && t !== 'TBD' && !/^[0-9]/.test(t) && !/^[A-Z]{1,3}$/.test(t) && !/^3[A-Z]+$/.test(t)) {
+        // Exclude TBD and slot codes that start with a digit (e.g. 1G, 2H, 3ABCDF)
+        if (t && t !== 'TBD' && !/^[0-9]/.test(t)) {
           teamSet.add(t);
         }
       }
